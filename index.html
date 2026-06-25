@@ -34,6 +34,7 @@
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
+            text-align: center;
         }
     </style>
 </head>
@@ -104,12 +105,12 @@
                 lineOptions: { styles: [{ color: dayData.color, weight: 5 }] },
                 createMarker: (i, wp) => {
                     const loc = dayData.locations[i];
-                    const url = `https://maps.google.com/?cid=17206015605798401504&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQ${loc.lat},${loc.lng}&travelmode=driving`;
+                    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
                     return L.marker(wp.latLng).bindPopup(`
                         <div class="popup-content">
                             <b>${loc.name}</b>
                             ${loc.desc}
-                            <a href="${url}" target="_blank" class="nav-btn">🚗 導航至此</a>
+                            <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
                         </div>
                     `);
                 },
