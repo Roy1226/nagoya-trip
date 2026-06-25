@@ -2,9 +2,18 @@
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>名古屋 6日5夜親子自駕遊 (2026終極版)</title>
-    <link rel="manifest" href="manifest.json">
     
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW 註冊失敗', err));
+        });
+      }
+    </script>
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -14,48 +23,50 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
         #map { height: 100vh; width: 100vw; }
-        .popup-content { font-size: 14px; line-height: 1.5; }
-        .popup-content b { color: #d32f2f; }
+        .popup-content { font-size: 14px; line-height: 1.6; }
+        .popup-content b { color: #d32f2f; display: block; margin-bottom: 5px; }
+        .nav-btn {
+            display: inline-block;
+            background-color: #4285F4;
+            color: white !important;
+            padding: 8px 12px;
+            margin-top: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
 
     <script>
-        // 初始化地圖
         const map = L.map('map').setView([35.1676, 136.9060], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
             attribution: '© OpenStreetMap' 
         }).addTo(map);
-
-        // Service Worker 註冊
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
-            });
-        }
 
         const itinerary = {
             "Day 1: 抵達與榮區": {
                 color: '#FF5722',
                 locations: [
                     { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, desc: "落機攞車，安頓行李。" },
-                    { name: "山本屋本店", lat: 35.1743, lng: 136.8732, desc: "味噌煮烏冬，有免費泊車。" },
-                    { name: "Oasis 21", lat: 35.1706, lng: 136.9099, desc: "榮區夜景。注意限高，搵露天車位。" }
+                    { name: "山本屋本店", lat: 35.1743, lng: 136.8732, desc: "味噌烏冬，有免費泊車。" },
+                    { name: "Oasis 21", lat: 35.1706, lng: 136.9099, desc: "榮區夜景。⚠️嚴禁駛入室內場，搵露天車位。" }
                 ]
             },
             "Day 2: 樂高與夜市": {
                 color: '#2196F3',
                 locations: [
-                    { name: "樂高樂園", lat: 35.0507, lng: 136.8436, desc: "市營停車場(¥1500)。" },
+                    { name: "樂高樂園", lat: 35.0507, lng: 136.8436, desc: "泊市營停車場(¥1500)。" },
                     { name: "東別院夜市", lat: 35.1481, lng: 136.9011, desc: "8號限定，美食車掃街。" }
                 ]
             },
             "Day 3: 牧場與巨公園": {
                 color: '#4CAF50',
                 locations: [
-                    { name: "愛知牧場", lat: 35.1458, lng: 137.0817, desc: "親親動物，有雪糕。" },
-                    { name: "LaLaport港明", lat: 35.1098, lng: 136.8836, desc: "避暑首選。" },
+                    { name: "愛知牧場", lat: 35.1458, lng: 137.0817, desc: "親親動物，有軟雪糕。" },
+                    { name: "LaLaport港明", lat: 35.1098, lng: 136.8836, desc: "冷氣避暑，車位寬敞。" },
                     { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, desc: "神宮店，必食鰻魚飯。" }
                 ]
             },
@@ -78,7 +89,7 @@
                 color: '#607D8B',
                 locations: [
                     { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, desc: "最後衝刺。" },
-                    { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, desc: "加滿油，還車。" }
+                    { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, desc: "入滿油(Regular)還車。" }
                 ]
             }
         };
@@ -91,13 +102,23 @@
             const control = L.Routing.control({
                 waypoints: waypoints,
                 lineOptions: { styles: [{ color: dayData.color, weight: 5 }] },
-                createMarker: (i, wp) => L.marker(wp.latLng).bindPopup(`<div class="popup-content"><b>${dayData.locations[i].name}</b><br>${dayData.locations[i].desc}</div>`),
+                createMarker: (i, wp) => {
+                    const loc = dayData.locations[i];
+                    const url = `https://maps.google.com/?cid=17206015605798401504&g_mp=Cidnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLlNlYXJjaFRleHQ${loc.lat},${loc.lng}&travelmode=driving`;
+                    return L.marker(wp.latLng).bindPopup(`
+                        <div class="popup-content">
+                            <b>${loc.name}</b>
+                            ${loc.desc}
+                            <a href="${url}" target="_blank" class="nav-btn">🚗 導航至此</a>
+                        </div>
+                    `);
+                },
                 routeWhileDragging: false,
                 addWaypoints: false,
                 draggableWaypoints: false
             }).addTo(map);
 
-            control.hide(); // 隱藏自動彈出的路徑清單
+            control.hide();
             layerGroup.addLayer(control);
             overlayMaps[dayName] = layerGroup;
             if(dayName.includes("Day 1")) layerGroup.addTo(map);
