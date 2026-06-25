@@ -1,7 +1,7 @@
 {
   name 名古屋親子遊,
   short_name 名古屋Map,
-  start_url .nagoya_map.html,
+  start_url .index.html,
   display standalone,
   background_color #ffffff,
   theme_color #FF5722,
