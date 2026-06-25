@@ -35,6 +35,7 @@
             border-radius: 5px;
             font-weight: bold;
             text-align: center;
+            width: 100%;
         }
     </style>
 </head>
@@ -105,6 +106,7 @@
                 lineOptions: { styles: [{ color: dayData.color, weight: 5 }] },
                 createMarker: (i, wp) => {
                     const loc = dayData.locations[i];
+                    // 修正後的導航連結格式
                     const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
                     return L.marker(wp.latLng).bindPopup(`
                         <div class="popup-content">
