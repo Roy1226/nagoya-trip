@@ -23,8 +23,8 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
         #map { height: 100vh; width: 100vw; }
-        .popup-content { font-size: 14px; line-height: 1.6; }
-        .popup-content b { color: #d32f2f; display: block; margin-bottom: 5px; }
+        .popup-content { font-size: 14px; line-height: 1.5; }
+        .popup-content b { color: #d32f2f; display: block; margin-bottom: 3px; }
         .nav-btn {
             display: inline-block;
             background-color: #4285F4;
@@ -52,46 +52,46 @@
             "Day 1: 抵達與榮區": {
                 color: '#FF5722',
                 locations: [
-                    { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, desc: "落機攞車，安頓行李。" },
-                    { name: "山本屋本店", lat: 35.1743, lng: 136.8732, desc: "味噌烏冬，有免費泊車。" },
-                    { name: "Oasis 21", lat: 35.1706, lng: 136.9099, desc: "榮區夜景。⚠️嚴禁駛入室內場，搵露天車位。" }
+                    { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, mapcode: "-", tel: "-", desc: "落機攞車，安頓行李。" },
+                    { name: "山本屋本店", lat: 35.1743, lng: 136.8732, mapcode: "4 163 118*66", tel: "052-482-2428", desc: "味噌烏冬，有免費泊車。" },
+                    { name: "Oasis 21", lat: 35.1706, lng: 136.9099, mapcode: "4 195 240*36", tel: "-", desc: "榮區夜景。⚠️嚴禁駛入室內場，搵露天車位。" }
                 ]
             },
             "Day 2: 樂高與夜市": {
                 color: '#2196F3',
                 locations: [
-                    { name: "樂高樂園", lat: 35.0507, lng: 136.8436, desc: "泊市營停車場(¥1500)。" },
-                    { name: "東別院夜市", lat: 35.1481, lng: 136.9011, desc: "8號限定，美食車掃街。" }
+                    { name: "樂高樂園", lat: 35.0507, lng: 136.8436, mapcode: "52 485 581*57", tel: "0570-058-605", desc: "泊市營停車場(¥1500)。" },
+                    { name: "東別院夜市", lat: 35.1481, lng: 136.9011, mapcode: "4 167 496*06", tel: "052-321-9201", desc: "8號限定，美食車掃街。" }
                 ]
             },
             "Day 3: 牧場與巨公園": {
                 color: '#4CAF50',
                 locations: [
-                    { name: "愛知牧場", lat: 35.1458, lng: 137.0817, desc: "親親動物，有軟雪糕。" },
-                    { name: "LaLaport港明", lat: 35.1098, lng: 136.8836, desc: "冷氣避暑，車位寬敞。" },
-                    { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, desc: "神宮店，必食鰻魚飯。" }
+                    { name: "愛知牧場", lat: 35.1458, lng: 137.0817, mapcode: "100 241 180*25", tel: "0561-72-1300", desc: "親親動物，有軟雪糕。" },
+                    { name: "LaLaport港明", lat: 35.1098, lng: 136.8836, mapcode: "4 135 776*21", tel: "052-651-3400", desc: "冷氣避暑，車位寬敞。" },
+                    { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, mapcode: "4 137 775*86", tel: "052-682-5598", desc: "神宮店，必食鰻魚飯。" }
                 ]
             },
             "Day 4: 鈴鹿賽車場": {
                 color: '#9C27B0',
                 locations: [
-                    { name: "鈴鹿賽車場", lat: 34.8438, lng: 136.5333, desc: "幼童樂園，注意防曬。" },
-                    { name: "一升びん/藏壽司", lat: 34.8735, lng: 136.5658, desc: "大型露天停車場。" }
+                    { name: "鈴鹿賽車場", lat: 34.8438, lng: 136.5333, mapcode: "159 387 508*68", tel: "059-378-1111", desc: "幼童樂園，注意防曬。" },
+                    { name: "一升びん/藏壽司", lat: 34.8735, lng: 136.5658, mapcode: "159 388 775*41", tel: "059-384-8888", desc: "大型露天停車場。" }
                 ]
             },
             "Day 5: 鮮果與 Outlet": {
                 color: '#E91E63',
                 locations: [
-                    { name: "Mitoka 農園", lat: 35.5397, lng: 136.7871, desc: "摘葡萄，特大車位。" },
-                    { name: "長島三井Outlet", lat: 35.0305, lng: 136.7350, desc: "P2立體場低層。" },
-                    { name: "木曾路太平通店", lat: 35.1384, lng: 136.8643, desc: "已預約個室。" }
+                    { name: "Mitoka 農園", lat: 35.5397, lng: 136.7871, mapcode: "178 304 630*81", tel: "0581-78-5556", desc: "摘葡萄，特大車位。" },
+                    { name: "長島三井Outlet", lat: 35.0305, lng: 136.7350, mapcode: "4 191 190*33", tel: "0594-45-8700", desc: "P2立體場低層。" },
+                    { name: "木曾路太平通店", lat: 35.1384, lng: 136.8643, mapcode: "4 136 673*14", tel: "052-362-2321", desc: "已預約個室。" }
                 ]
             },
             "Day 6: 常滑 AEON": {
                 color: '#607D8B',
                 locations: [
-                    { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, desc: "最後衝刺。" },
-                    { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, desc: "入滿油(Regular)還車。" }
+                    { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, mapcode: "205 383 671*88", tel: "0569-35-7500", desc: "最後衝刺。" },
+                    { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, mapcode: "453 800 682*20", tel: "-", desc: "入滿油(Regular)還車。" }
                 ]
             }
         };
@@ -106,12 +106,15 @@
                 lineOptions: { styles: [{ color: dayData.color, weight: 5 }] },
                 createMarker: (i, wp) => {
                     const loc = dayData.locations[i];
-                    // 修正後的導航連結格式
-                    const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
+                    const navUrl = `https://www.google.com/maps/contrib/111651038847351834451/reviews{loc.lat},${loc.lng}&travelmode=driving`;
                     return L.marker(wp.latLng).bindPopup(`
                         <div class="popup-content">
                             <b>${loc.name}</b>
-                            ${loc.desc}
+                            <p style="margin:5px 0;">
+                                📍 <b>Mapcode:</b> ${loc.mapcode}<br>
+                                📞 <b>電話:</b> ${loc.tel}<br>
+                                📝 ${loc.desc}
+                            </p>
                             <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
                         </div>
                     `);
