@@ -1,0 +1,15 @@
+{
+  name 名古屋親子遊,
+  short_name 名古屋Map,
+  start_url .nagoya_map.html,
+  display standalone,
+  background_color #ffffff,
+  theme_color #FF5722,
+  icons [
+    {
+      src httpscdn-icons-png.flaticon.com512854854878.png,
+      sizes 512x512,
+      type imagepng
+    }
+  ]
+}
