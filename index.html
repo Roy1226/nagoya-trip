@@ -17,8 +17,8 @@
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 20px; overflow-y: auto; }
         .info-card { padding: 15px; border: 1px solid #ddd; border-radius: 12px; margin: 10px; background: white; }
         .meta-box { font-size: 13px; color: #444; margin: 8px 0; padding: 8px; background: #f8f9fa; border-left: 4px solid #4285F4; }
-        .btn-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
-        .btn { padding: 6px 2px; border-radius: 6px; text-align: center; color: white; font-weight: bold; text-decoration: none; font-size: 10px; }
+        .btn-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 10px; }
+        .btn { padding: 8px 0; border-radius: 6px; text-align: center; color: white; font-weight: bold; text-decoration: none; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -98,10 +98,11 @@
                     <b>${loc.name} (${loc.time})</b>
                     <div class="meta-box">📍 ${loc.addr}<br>📟 Mapcode: ${loc.mapcode}<br>📞 <a href="tel:${loc.tel}">${loc.tel}</a></div>
                     <div class="btn-group">
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" class="btn" style="background:#4285F4">🚗 導航</a>
-                        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" class="btn" style="background:#00bcd4">👀 實景</a>
-                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfl-B4eJPRgQ-dlXdrVvjXaUOGqf3CJIMA9fXpodP6qRTBlzg/viewform" class="btn" style="background:#9c27b0">📸 收據</a>
-                        <a href="https://www.google.com/maps/search/平面駐車場+near+${loc.lat},${loc.lng}" class="btn" style="background:#ff9800">🅿️ 露天泊車</a>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" class="btn" style="background:#4285F4">🚗</a>
+                        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" class="btn" style="background:#00bcd4">👀</a>
+                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfl-B4eJPRgQ-dlXdrVvjXaUOGqf3CJIMA9fXpodP6qRTBlzg/viewform" class="btn" style="background:#9c27b0">📸</a>
+                        <a href="https://www.google.com/maps/search/平面駐車場+near+${loc.lat},${loc.lng}" class="btn" style="background:#ff9800">🅿️</a>
+                        <a href="https://mapcode.app/" target="_blank" class="btn" style="background:#e91e63">📟</a>
                     </div>
                 </div>
             `).join('');
