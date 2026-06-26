@@ -3,17 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名古屋 6日5夜親子自駕遊 (2026終極版)</title>
+    <title>名古屋 6日5夜親子自駕遊</title>
     
     <link rel="manifest" href="manifest.json">
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW 註冊失敗', err));
-        });
-      }
-    </script>
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -53,28 +45,42 @@
                     { name: "山本屋本店", lat: 35.1743, lng: 136.8732, mapcode: "4 163 118*66", tel: "052-482-2428", desc: "味噌烏冬，有免費泊車。" },
                     { name: "Oasis 21", lat: 35.1706, lng: 136.9099, mapcode: "4 195 240*36", tel: "-", desc: "榮區夜景。⚠️嚴禁駛入室內場，搵露天車位。" }
                 ]
-            },
-            "Day 2: 樂高與夜市": {
-                color: '#2196F3',
-                locations: [
-                    { name: "樂高樂園", lat: 35.0507, lng: 136.8436, mapcode: "52 485 581*57", tel: "0570-058-605", desc: "泊市營停車場(¥1500)。" },
-                    { name: "東別院夜市", lat: 35.1481, lng: 136.9011, mapcode: "4 167 496*06", tel: "052-321-9201", desc: "8號限定，美食車掃街。" }
-                ]
-            },
-            "Day 3: 牧場與巨公園": {
-                color: '#4CAF50',
-                locations: [
-                    { name: "愛知牧場", lat: 35.1458, lng: 137.0817, mapcode: "100 241 180*25", tel: "0561-72-1300", desc: "親親動物，有軟雪糕。" },
-                    { name: "LaLaport港明", lat: 35.1098, lng: 136.8836, mapcode: "4 135 776*21", tel: "052-651-3400", desc: "冷氣避暑，車位寬敞。" },
-                    { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, mapcode: "4 137 775*86", tel: "052-682-5598", desc: "神宮店，必食鰻魚飯。" }
-                ]
-            },
-            "Day 4: 鈴鹿賽車場": {
-                color: '#9C27B0',
-                locations: [
-                    { name: "鈴鹿賽車場", lat: 34.8438, lng: 136.5333, mapcode: "159 387 508*68", tel: "059-378-1111", desc: "幼童樂園，注意防曬。" },
-                    { name: "一升びん/藏壽司", lat: 34.8735, lng: 136.5658, mapcode: "159 388 775*41", tel: "059-384-8888", desc: "大型露天停車場。" }
-                ]
-            },
-            "Day 5: 鮮果與 Outlet": {
-                color: '#E9
+            }
+        };
+
+        const overlayMaps = {};
+        for (const [dayName, dayData] of Object.entries(itinerary)) {
+            const layerGroup = L.layerGroup();
+            dayData.locations.forEach((loc, index) => {
+                // 修正連結格式，確保唔會有語法錯誤
+                const navUrl = "https://www.google.com/maps/dir/?api=1&destination=" + loc.lat + "," + loc.lng + "&travelmode=driving";
+                
+                let distanceText = "";
+                if (index < dayData.locations.length - 1) {
+                    const nextLoc = dayData.locations[index + 1];
+                    const d = map.distance([loc.lat, loc.lng], [nextLoc.lat, nextLoc.lng]) / 1000;
+                    const time = Math.round(d / 40 * 60);
+                    distanceText = `<p style="margin:8px 0; color:#555; font-size:12px; border-top:1px solid #eee; pt:5px;">➡️ 下一站距離: ${d.toFixed(1)} km (預估 ${time} 分鐘)</p>`;
+                }
+
+                const marker = L.marker([loc.lat, loc.lng]).addTo(layerGroup);
+                marker.bindPopup(`
+                    <div class="popup-content">
+                        <b>${loc.name}</b>
+                        <p style="margin:5px 0;">
+                            📍 <b>Mapcode:</b> ${loc.mapcode}<br>
+                            📞 <b>電話:</b> ${loc.tel}<br>
+                            📝 ${loc.desc}
+                        </p>
+                        ${distanceText}
+                        <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
+                    </div>
+                `);
+            });
+            overlayMaps[dayName] = layerGroup;
+            if(dayName.includes("Day 1")) layerGroup.addTo(map);
+        }
+        L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
+    </script>
+</body>
+</html>
