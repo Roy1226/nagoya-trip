@@ -1,8 +1,3 @@
-沒問題，我已經將 **「👀 Google 實景預覽」** 按鈕加返入去個按鈕群組度。現在每個地點都有齊所有功能，包含導航、實景、收據、停車場、休憩站以及加油站搜尋。
-
-呢份係最終完整版，你可以直接覆蓋：
-
-```html
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -18,15 +13,18 @@
         #menu { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: #e0e0e0; }
         .day-btn { flex: 1 1 calc(33.333% - 8px); padding: 10px 0; background: #fff; border: 2px solid #ccc; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer; }
         .day-btn.active { background: #d32f2f; color: white; border-color: #d32f2f; }
+        #preview-btn { width: 100%; padding: 12px; background: #333; color: white; border: none; font-weight: bold; cursor: pointer; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; padding: 20px; overflow-y: auto; }
         .info-card { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; background: white; }
         .booking-status { font-size: 12px; color: #fff; background: #673ab7; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
-        .mapcode-box { font-size: 13px; color: #d32f2f; font-weight: bold; margin: 5px 0; padding: 5px; background: #fff3f3; border-radius: 4px; }
+        .meta-box { font-size: 13px; color: #333; margin: 5px 0; padding: 5px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid #d32f2f; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .btn { padding: 10px; border-radius: 6px; text-align: center; color: white; font-weight: bold; text-decoration: none; font-size: 13px; }
+        .btn { padding: 8px; border-radius: 6px; text-align: center; color: white; font-weight: bold; text-decoration: none; font-size: 12px; }
     </style>
 </head>
 <body>
     <div id="map"></div>
+    <button id="preview-btn" onclick="togglePreview()">📋 全行程總覽預覽</button>
     <div id="menu">
         <div class="day-btn" id="btn-Day1" onclick="showDay('Day 1')">Day 1</div>
         <div class="day-btn" id="btn-Day2" onclick="showDay('Day 2')">Day 2</div>
@@ -35,6 +33,13 @@
         <div class="day-btn" id="btn-Day5" onclick="showDay('Day 5')">Day 5</div>
         <div class="day-btn" id="btn-Day6" onclick="showDay('Day 6')">Day 6</div>
     </div>
+    
+    <div id="modal">
+        <button onclick="togglePreview()" style="float:right;">關閉</button>
+        <h2>全行程摘要</h2>
+        <div id="preview-content"></div>
+    </div>
+
     <div id="details" style="padding: 15px;"></div>
 
     <script>
@@ -43,32 +48,39 @@
 
         const itinerary = {
             "Day 1": [
-                { name: "機場攞車", time: "16:00", mapcode: "453 800 682*20", addr: "愛知県常滑市セントレア1丁目1番地", status: "已預訂", lat: 34.8583, lng: 136.8115 },
-                { name: "山本屋本店", time: "18:00", mapcode: "4 163 118*66", addr: "愛知県名古屋市中村区太閤通6-5", status: "已預訂", lat: 35.1743, lng: 136.8732 },
-                { name: "日航尚格酒店", time: "20:00", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", status: "已預訂", lat: 35.1706, lng: 136.8920 }
+                { name: "機場攞車", time: "16:00", tel: "0569-38-1195", url: "https://www.centrair.jp/", mapcode: "453 800 682*20", addr: "愛知県常滑市セントレア1丁目1番地", status: "已預訂", lat: 34.8583, lng: 136.8115 },
+                { name: "山本屋本店", time: "18:00", tel: "052-482-2428", url: "https://yamamotoyahonten.co.jp/", mapcode: "4 163 118*66", addr: "愛知県名古屋市中村区太閤通6-5", status: "已預訂", lat: 35.1743, lng: 136.8732 },
+                { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", url: "https://nikkostyle.jp/nagoya/", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", status: "已預訂", lat: 35.1706, lng: 136.8920 }
             ],
             "Day 2": [
-                { name: "樂高樂園", time: "10:00", mapcode: "52 485 581*57", addr: "愛知県名古屋市港区金城ふ頭2丁目2-1", status: "已買飛", lat: 35.0507, lng: 136.8436 },
-                { name: "東別院夜市", time: "17:30", mapcode: "4 167 496*06", addr: "愛知県名古屋市中区橘2丁目8-55", status: "自由活動", lat: 35.1481, lng: 136.9011 }
+                { name: "樂高樂園", time: "10:00", tel: "0570-058-605", url: "https://www.legoland.jp/", mapcode: "52 485 581*57", addr: "愛知県名古屋市港区金城ふ頭2丁目2-1", status: "已買飛", lat: 35.0507, lng: 136.8436 },
+                { name: "東別院夜市", time: "17:30", tel: "052-321-9201", url: "https://higashibetsuin-yousai.com/", mapcode: "4 167 496*06", addr: "愛知県名古屋市中区橘2丁目8-55", status: "自由活動", lat: 35.1481, lng: 136.9011 }
             ],
             "Day 3": [
-                { name: "愛知牧場", time: "09:05", mapcode: "100 241 180*25", addr: "愛知県日進市米野木町南山977", status: "自由活動", lat: 35.1458, lng: 137.0817 },
-                { name: "あつた蓬莱軒", time: "17:30", mapcode: "4 137 775*86", addr: "愛知県名古屋市熱田区神戸町503", status: "待訂位", lat: 35.1264, lng: 136.9069 }
+                { name: "愛知牧場", time: "09:05", tel: "0561-72-1300", url: "https://aiboku.com/", mapcode: "100 241 180*25", addr: "愛知県日進市米野木町南山977", status: "自由活動", lat: 35.1458, lng: 137.0817 },
+                { name: "あつた蓬莱軒", time: "17:30", tel: "052-682-5598", url: "https://www.houraiken.com/", mapcode: "4 137 775*86", addr: "愛知県名古屋市熱田区神戸町503", status: "待訂位", lat: 35.1264, lng: 136.9069 }
             ],
             "Day 4": [
-                { name: "鈴鹿賽車場", time: "10:00", mapcode: "159 387 508*68", addr: "三重県鈴鹿市稲生町7992", status: "已買飛", lat: 34.8438, lng: 136.5333 },
-                { name: "Suzuka Inn", time: "18:00", mapcode: "-", addr: "三重縣鈴鹿市內", status: "已預訂", lat: 34.8735, lng: 136.5658 }
+                { name: "鈴鹿賽車場", time: "10:00", tel: "059-378-1111", url: "https://www.suzukacircuit.jp/", mapcode: "159 387 508*68", addr: "三重県鈴鹿市稲生町7992", status: "已買飛", lat: 34.8438, lng: 136.5333 },
+                { name: "Suzuka Inn", time: "18:00", tel: "-", url: "#", mapcode: "-", addr: "三重縣鈴鹿市內", status: "已預訂", lat: 34.8735, lng: 136.5658 }
             ],
             "Day 5": [
-                { name: "Mitoka 農園", time: "10:00", mapcode: "178 304 630*81", addr: "岐阜県山県市小倉726-1", status: "自由活動", lat: 35.5397, lng: 136.7871 },
-                { name: "長島三井Outlet", time: "14:15", mapcode: "4 191 190*33", addr: "三重県桑名市長島町浦安368", status: "自由活動", lat: 35.0305, lng: 136.7350 },
-                { name: "木曾路太平通店", time: "18:30", mapcode: "-", addr: "愛知県名古屋市中川区太平通4丁目21", status: "待訂位", lat: 35.1384, lng: 136.8643 }
+                { name: "Mitoka 農園", time: "10:00", tel: "0581-78-5556", url: "https://mitoka-nouen.com/", mapcode: "178 304 630*81", addr: "岐阜県山県市小倉726-1", status: "自由活動", lat: 35.5397, lng: 136.7871 },
+                { name: "長島三井Outlet", time: "14:15", tel: "0594-45-8700", url: "https://mitsui-shopping-park.com/mop/nagashima/", mapcode: "4 191 190*33", addr: "三重県桑名市長島町浦安368", status: "自由活動", lat: 35.0305, lng: 136.7350 },
+                { name: "木曾路太平通店", time: "18:30", tel: "052-362-2321", url: "https://www.kisoji.co.jp/", mapcode: "-", addr: "愛知県名古屋市中川区太平通4丁目21", status: "待訂位", lat: 35.1384, lng: 136.8643 }
             ],
             "Day 6": [
-                { name: "常滑 AEON", time: "10:00", mapcode: "205 383 671*88", addr: "愛知県常滑市りんくう町2丁目20-3", status: "自由活動", lat: 34.8966, lng: 136.8288 },
-                { name: "機場還車", time: "13:00", mapcode: "453 800 682*20", addr: "愛知県常滑市セントレア1丁目1番地", status: "待處理", lat: 34.8583, lng: 136.8115 }
+                { name: "常滑 AEON", time: "10:00", tel: "0569-35-7500", url: "https://tokoname-aeonmall.com/", mapcode: "205 383 671*88", addr: "愛知県常滑市りんくう町2丁目20-3", status: "自由活動", lat: 34.8966, lng: 136.8288 },
+                { name: "機場還車", time: "13:00", tel: "0569-38-1195", url: "https://www.centrair.jp/", mapcode: "453 800 682*20", addr: "愛知県常滑市セントレア1丁目1番地", status: "待處理", lat: 34.8583, lng: 136.8115 }
             ]
         };
+
+        function togglePreview() {
+            const modal = document.getElementById('modal');
+            const content = document.getElementById('preview-content');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+            content.innerHTML = Object.keys(itinerary).map(day => `<h3>${day}</h3><ul>${itinerary[day].map(l => `<li>${l.time} - ${l.name}</li>`).join('')}</ul>`).join('');
+        }
 
         function showDay(day) {
             map.invalidateSize();
@@ -78,15 +90,15 @@
             document.getElementById('details').innerHTML = itinerary[day].map(loc => `
                 <div class="info-card">
                     <b>${loc.name} (${loc.time}) <span class="booking-status">${loc.status}</span></b>
-                    <div style="font-size:12px; color:#666; margin:5px 0;">📍 ${loc.addr}</div>
-                    <div class="mapcode-box">Mapcode: ${loc.mapcode}</div>
+                    <div class="meta-box">📍 ${loc.addr}<br>📞 <a href="tel:${loc.tel}">${loc.tel}</a><br>📟 ${loc.mapcode}</div>
                     <div class="btn-group">
+                        <a href="${loc.url}" target="_blank" class="btn" style="background:#ff5722">🌐 官網</a>
                         <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#4285F4">🚗 導航</a>
                         <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#00bcd4">👀 實景</a>
                         <a href="https://docs.google.com/forms/d/e/1FAIpQLSfl-B4eJPRgQ-dlXdrVvjXaUOGqf3CJIMA9fXpodP6qRTBlzg/viewform" target="_blank" class="btn" style="background:#9c27b0">📸 收據</a>
                         <a href="https://www.google.com/maps/search/parking+near+${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#ff9800">🅿️ 泊車</a>
                         <a href="https://www.michi-no-eki.jp/stations?pref=23&area=" target="_blank" class="btn" style="background:#34a853">🏪 休憩</a>
-                        <a href="https://www.google.com/maps/search/gas+station/" target="_blank" class="btn" style="background:#d32f2f">⛽ 油站</a>
+                        <a href="https://www.google.com/maps/search/gas+station/" target="_blank" class="btn btn-full" style="background:#d32f2f">⛽ 油站</a>
                     </div>
                 </div>
             `).join('');
@@ -94,7 +106,3 @@
     </script>
 </body>
 </html>
-
-```
-
-今次成個指揮中心已經進化到「全方位」級別，去到現場直接撳「實景」就可以睇清楚入口位置，非常方便。祝你旅途順利！
