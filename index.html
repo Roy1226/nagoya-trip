@@ -1,3 +1,8 @@
+這是一份完整更新後的 HTML 代碼，我已經將「Hiace 高度警示條」整合進頂部，並優化了停車場搜尋邏輯，確保你每一次點擊「地面泊車」都能自動過濾出最適合大型車輛的露天車位。
+
+你可以直接複製這段代碼，儲存為一個 `.html` 檔案即可使用。
+
+```html
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
@@ -9,6 +14,8 @@
     <style>
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f5f5; }
+        /* Hiace 警示條 */
+        #warning-bar { background: #d32f2f; color: white; padding: 12px; text-align: center; font-weight: bold; font-size: 14px; position: sticky; top: 0; z-index: 1000; }
         #map { height: 40vh; width: 100%; }
         #menu { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: #e0e0e0; }
         .day-btn { flex: 1 1 calc(33.333% - 8px); padding: 10px 0; background: #fff; border: 2px solid #ccc; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer; }
@@ -23,6 +30,8 @@
     </style>
 </head>
 <body>
+
+    <div id="warning-bar">⚠️ HIACE 高度注意：2.285m (請務必搜尋「平面駐車場」)</div>
     <div id="map"></div>
     <button id="preview-btn" onclick="togglePreview()">📋 全行程總覽預覽</button>
     <div id="menu">
@@ -96,22 +105,32 @@
             itinerary[day].forEach(l => L.marker([l.lat, l.lng]).addTo(markers).bindPopup(l.name));
             map.fitBounds(latlngs, { padding: [50, 50] });
 
-            document.getElementById('details').innerHTML = itinerary[day].map(loc => `
-                <div class="info-card">
-                    <b>${loc.name} (${loc.time}) <span class="booking-status">${loc.status}</span></b>
-                    <div class="meta-box">📍 ${loc.addr}<br>📞 <a href="tel:${loc.tel}">${loc.tel}</a><br>📟 ${loc.mapcode}</div>
-                    <div class="btn-group">
-                        <a href="${loc.url}" target="_blank" class="btn" style="background:#ff5722">🌐 官網</a>
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#4285F4">🚗 導航</a>
-                        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#00bcd4">👀 實景</a>
-                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfl-B4eJPRgQ-dlXdrVvjXaUOGqf3CJIMA9fXpodP6qRTBlzg/viewform" target="_blank" class="btn" style="background:#9c27b0">📸 收據</a>
-                        <a href="https://www.google.com/maps/search/parking+near+${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#ff9800">🅿️ 泊車</a>
-                        <a href="https://www.michi-no-eki.jp/stations?pref=23&area=" target="_blank" class="btn" style="background:#34a853">🏪 休憩</a>
-                        <a href="https://www.google.com/maps/search/gas+station/" target="_blank" class="btn" style="background:#d32f2f">⛽ 油站</a>
+            document.getElementById('details').innerHTML = itinerary[day].map(loc => {
+                // 自動化停車場搜尋邏輯
+                const parkingQuery = (loc.name.includes("Outlet") || loc.name.includes("AEON") || loc.name.includes("樂園")) 
+                    ? "大型平面駐車場" 
+                    : "平面駐車場";
+                const parkingUrl = `https://www.google.com/maps/search/${encodeURIComponent(parkingQuery)}+near+${loc.lat},${loc.lng}`;
+
+                return `
+                    <div class="info-card">
+                        <b>${loc.name} (${loc.time}) <span class="booking-status">${loc.status}</span></b>
+                        <div class="meta-box">📍 ${loc.addr}<br>📞 <a href="tel:${loc.tel}">${loc.tel}</a><br>📟 ${loc.mapcode}</div>
+                        <div class="btn-group">
+                            <a href="${loc.url}" target="_blank" class="btn" style="background:#ff5722">🌐 官網</a>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#4285F4">🚗 導航</a>
+                            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#00bcd4">👀 實景</a>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfl-B4eJPRgQ-dlXdrVvjXaUOGqf3CJIMA9fXpodP6qRTBlzg/viewform" target="_blank" class="btn" style="background:#9c27b0">📸 收據</a>
+                            <a href="${parkingUrl}" target="_blank" class="btn" style="background:#ff9800">🅿️ 地面泊車</a>
+                            <a href="https://www.michi-no-eki.jp/stations?pref=23&area=" target="_blank" class="btn" style="background:#34a853">🏪 休憩</a>
+                            <a href="https://www.google.com/maps/search/gas+station/" target="_blank" class="btn" style="background:#d32f2f">⛽ 油站</a>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
     </script>
 </body>
 </html>
+
+```
