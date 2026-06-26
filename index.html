@@ -14,7 +14,7 @@
         .day-btn { flex: 1 1 calc(33.333% - 8px); padding: 10px 0; background: #fff; border: 2px solid #ccc; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer; }
         .day-btn.active { background: #d32f2f; color: white; border-color: #d32f2f; }
         #preview-btn { width: 100%; padding: 12px; background: #333; color: white; border: none; font-weight: bold; cursor: pointer; }
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 999; padding: 20px; overflow-y: auto; }
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 20px; overflow-y: auto; }
         .info-card { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; background: white; }
         .booking-status { font-size: 12px; color: #fff; background: #673ab7; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
         .meta-box { font-size: 13px; color: #333; margin: 5px 0; padding: 5px; background: #f9f9f9; border-radius: 4px; border-left: 4px solid #d32f2f; }
@@ -45,6 +45,9 @@
     <script>
         const map = L.map('map').setView([35.1676, 136.8920], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        let markers = L.layerGroup().addTo(map);
+        let polyline = L.polyline([], {color: '#d32f2f', weight: 4, dashArray: '8,8'}).addTo(map);
 
         const itinerary = {
             "Day 1": [
@@ -87,6 +90,12 @@
             document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + day.replace(' ', '')).classList.add('active');
             
+            markers.clearLayers();
+            const latlngs = itinerary[day].map(l => [l.lat, l.lng]);
+            polyline.setLatLngs(latlngs);
+            itinerary[day].forEach(l => L.marker([l.lat, l.lng]).addTo(markers).bindPopup(l.name));
+            map.fitBounds(latlngs, { padding: [50, 50] });
+
             document.getElementById('details').innerHTML = itinerary[day].map(loc => `
                 <div class="info-card">
                     <b>${loc.name} (${loc.time}) <span class="booking-status">${loc.status}</span></b>
@@ -98,7 +107,7 @@
                         <a href="https://docs.google.com/forms/d/e/1FAIpQLSfl-B4eJPRgQ-dlXdrVvjXaUOGqf3CJIMA9fXpodP6qRTBlzg/viewform" target="_blank" class="btn" style="background:#9c27b0">📸 收據</a>
                         <a href="https://www.google.com/maps/search/parking+near+${loc.lat},${loc.lng}" target="_blank" class="btn" style="background:#ff9800">🅿️ 泊車</a>
                         <a href="https://www.michi-no-eki.jp/stations?pref=23&area=" target="_blank" class="btn" style="background:#34a853">🏪 休憩</a>
-                        <a href="https://www.google.com/maps/search/gas+station/" target="_blank" class="btn btn-full" style="background:#d32f2f">⛽ 油站</a>
+                        <a href="https://www.google.com/maps/search/gas+station/" target="_blank" class="btn" style="background:#d32f2f">⛽ 油站</a>
                     </div>
                 </div>
             `).join('');
