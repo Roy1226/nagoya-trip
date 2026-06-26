@@ -20,34 +20,66 @@
 <body>
     <div id="map"></div>
     <script>
-        const map = L.map('map').setView([35.1676, 136.9060], 10);
+        const map = L.map('map').setView([35.1676, 136.8920], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
-        // --- 行程數據庫：已加入「住宿酒店」欄位 ---
         const itinerary = {
-            "Day 1: 抵達與入住": { color: '#FF5722', locations: [
-                { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, mapcode: "-", tel: "-", desc: "攞車前往酒店。", parking: "機場租車場", hotel: "" },
-                { name: "名古屋觀光酒店", lat: 35.1675, lng: 136.8975, mapcode: "4 164 250*55", tel: "052-231-7711", desc: "今晚住宿。", parking: "酒店停車場", hotel: "入住酒店" }
+            "Day 1: 抵達與榮區": { color: '#FF5722', locations: [
+                { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, mapcode: "453 800 682*20", tel: "-", parking: "租車專用場", isHotel: false },
+                { name: "山本屋本店", lat: 35.1743, lng: 136.8732, mapcode: "4 163 118*66", tel: "052-482-2428", parking: "店舖免費車位", isHotel: false },
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true }
             ]},
-            // 你可以繼續加入其他日子的行程，格式如下：
-            // { name: "酒店名稱", lat: 0, lng: 0, mapcode: "-", tel: "-", desc: "休息", parking: "泊車位", hotel: "住宿" }
+            "Day 2: 樂高與夜市": { color: '#2196F3', locations: [
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true },
+                { name: "樂高樂園", lat: 35.0507, lng: 136.8436, mapcode: "52 485 581*57", tel: "0570-058-605", parking: "市營大型車場", isHotel: false },
+                { name: "東別院夜市", lat: 35.1481, lng: 136.9011, mapcode: "4 167 496*06", tel: "052-321-9201", parking: "附近投幣停車場", isHotel: false }
+            ]},
+            "Day 3: 牧場與鰻魚飯": { color: '#4CAF50', locations: [
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true },
+                { name: "愛知牧場", lat: 35.1458, lng: 137.0817, mapcode: "100 241 180*25", tel: "0561-72-1300", parking: "內設大型免費場", isHotel: false },
+                { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, mapcode: "4 137 775*86", tel: "052-682-5598", parking: "專屬停車區", isHotel: false }
+            ]},
+            "Day 4: 鈴鹿賽車場": { color: '#9C27B0', locations: [
+                { name: "鈴鹿賽車場", lat: 34.8438, lng: 136.5333, mapcode: "159 387 508*68", tel: "059-378-1111", parking: "園區專用場", isHotel: false },
+                { name: "鈴鹿市區酒店", lat: 34.8735, lng: 136.5658, mapcode: "-", tel: "-", parking: "酒店專屬場", isHotel: true }
+            ]},
+            "Day 5: 鮮果與 Outlet": { color: '#E91E63', locations: [
+                { name: "鈴鹿市區酒店", lat: 34.8735, lng: 136.5658, mapcode: "-", tel: "-", parking: "酒店專屬場", isHotel: true },
+                { name: "Mitoka 農園", lat: 35.5397, lng: 136.7871, mapcode: "178 304 630*81", tel: "0581-78-5556", parking: "免費車場", isHotel: false },
+                { name: "長島三井Outlet", lat: 35.0305, lng: 136.7350, mapcode: "4 191 190*33", tel: "0594-45-8700", parking: "立體停車場 (P2)", isHotel: false },
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true }
+            ]},
+            "Day 6: 最後衝刺": { color: '#607D8B', locations: [
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true },
+                { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, mapcode: "205 383 671*88", tel: "0569-35-7500", parking: "商場免費場", isHotel: false },
+                { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, mapcode: "453 800 682*20", tel: "-", parking: "租車還車處", isHotel: false }
+            ]}
         };
 
         const overlayMaps = {};
         for (const [dayName, dayData] of Object.entries(itinerary)) {
             const layerGroup = L.layerGroup();
+            const latlngs = dayData.locations.map(loc => [loc.lat, loc.lng]);
+            L.polyline(latlngs, { color: dayData.color, weight: 4, dashArray: '5, 10' }).addTo(layerGroup);
+
             dayData.locations.forEach((loc, index) => {
                 const navUrl = "https://www.google.com/maps/dir/?api=1&destination=LAT,LNG" + loc.lat + "," + loc.lng + "&travelmode=driving";
+                let dist = "";
+                if (index < dayData.locations.length - 1) {
+                    const next = dayData.locations[index + 1];
+                    const d = map.distance([loc.lat, loc.lng], [next.lat, next.lng]) / 1000;
+                    dist = `<p style="font-size:12px; color:#666; margin:5px 0;">➡️ 下站: ${d.toFixed(1)} km (約 ${Math.round(d/40*60)} 分)</p>`;
+                }
                 
-                // 顯示邏輯：如果有 hotel 欄位，就顯示酒店 icon
-                const infoBox = loc.hotel ? `<div class="hotel-info">🏨 住宿: ${loc.name}</div>` : `<div class="parking-info">🅿️ 泊車: ${loc.parking}</div>`;
+                const icon = loc.isHotel ? "🏨" : (index === 0 ? "🟢" : (index === dayData.locations.length - 1 ? "🔴" : "📍"));
+                const infoBox = loc.isHotel ? `<div class="hotel-info">🏨 住宿: ${loc.name}</div>` : `<div class="parking-info">🅿️ 泊車: ${loc.parking}</div>`;
                 
-                const marker = L.marker([loc.lat, loc.lng]).addTo(layerGroup);
-                marker.bindPopup(`
+                L.marker([loc.lat, loc.lng]).addTo(layerGroup).bindPopup(`
                     <div class="popup-content">
-                        <b>${index === 0 ? '🟢 起點: ' : '📍 '}${loc.name}</b>
+                        <b>${icon} ${loc.name}</b>
                         <p style="margin:5px 0;">Map: ${loc.mapcode}<br>Tel: ${loc.tel}</p>
                         ${infoBox}
+                        ${dist}
                         <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
                     </div>
                 `);
