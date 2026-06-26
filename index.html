@@ -77,47 +77,4 @@
                 ]
             },
             "Day 5: 鮮果與 Outlet": {
-                color: '#E91E63',
-                locations: [
-                    { name: "Mitoka 農園", lat: 35.5397, lng: 136.7871, mapcode: "178 304 630*81", tel: "0581-78-5556", desc: "摘葡萄，特大車位。" },
-                    { name: "長島三井Outlet", lat: 35.0305, lng: 136.7350, mapcode: "4 191 190*33", tel: "0594-45-8700", desc: "P2立體場低層。" },
-                    { name: "木曾路太平通店", lat: 35.1384, lng: 136.8643, mapcode: "4 136 673*14", tel: "052-362-2321", desc: "已預約個室。" }
-                ]
-            },
-            "Day 6: 常滑 AEON": {
-                color: '#607D8B',
-                locations: [
-                    { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, mapcode: "205 383 671*88", tel: "0569-35-7500", desc: "最後衝刺。" },
-                    { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, mapcode: "453 800 682*20", tel: "-", desc: "入滿油(Regular)還車。" }
-                ]
-            }
-        };
-
-        const overlayMaps = {};
-        for (const [dayName, dayData] of Object.entries(itinerary)) {
-            const layerGroup = L.layerGroup();
-            
-            dayData.locations.forEach(loc => {
-                const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
-                const marker = L.marker([loc.lat, loc.lng]).addTo(layerGroup);
-                
-                marker.bindPopup(`
-                    <div class="popup-content">
-                        <b>${loc.name}</b>
-                        <p style="margin:5px 0;">
-                            📍 <b>Mapcode:</b> ${loc.mapcode}<br>
-                            📞 <b>電話:</b> ${loc.tel}<br>
-                            📝 ${loc.desc}
-                        </p>
-                        <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
-                    </div>
-                `);
-            });
-
-            overlayMaps[dayName] = layerGroup;
-            if(dayName.includes("Day 1")) layerGroup.addTo(map);
-        }
-        L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
-    </script>
-</body>
-</html>
+                color: '#E9
