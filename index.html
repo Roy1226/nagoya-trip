@@ -17,9 +17,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
         #map { height: 100vh; width: 100vw; }
@@ -99,33 +96,24 @@
         const overlayMaps = {};
         for (const [dayName, dayData] of Object.entries(itinerary)) {
             const layerGroup = L.layerGroup();
-            const waypoints = dayData.locations.map(loc => L.latLng(loc.lat, loc.lng));
             
-            const control = L.Routing.control({
-                waypoints: waypoints,
-                lineOptions: { styles: [{ color: dayData.color, weight: 5 }] },
-                createMarker: (i, wp) => {
-                    const loc = dayData.locations[i];
-                    const navUrl = `https://www.google.com/maps/contrib/111651038847351834451/reviews{loc.lat},${loc.lng}&travelmode=driving`;
-                    return L.marker(wp.latLng).bindPopup(`
-                        <div class="popup-content">
-                            <b>${loc.name}</b>
-                            <p style="margin:5px 0;">
-                                📍 <b>Mapcode:</b> ${loc.mapcode}<br>
-                                📞 <b>電話:</b> ${loc.tel}<br>
-                                📝 ${loc.desc}
-                            </p>
-                            <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
-                        </div>
-                    `);
-                },
-                routeWhileDragging: false,
-                addWaypoints: false,
-                draggableWaypoints: false
-            }).addTo(map);
+            dayData.locations.forEach(loc => {
+                const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
+                const marker = L.marker([loc.lat, loc.lng]).addTo(layerGroup);
+                
+                marker.bindPopup(`
+                    <div class="popup-content">
+                        <b>${loc.name}</b>
+                        <p style="margin:5px 0;">
+                            📍 <b>Mapcode:</b> ${loc.mapcode}<br>
+                            📞 <b>電話:</b> ${loc.tel}<br>
+                            📝 ${loc.desc}
+                        </p>
+                        <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
+                    </div>
+                `);
+            });
 
-            control.hide();
-            layerGroup.addLayer(control);
             overlayMaps[dayName] = layerGroup;
             if(dayName.includes("Day 1")) layerGroup.addTo(map);
         }
