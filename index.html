@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>名古屋 6日5夜親子自駕遊</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
@@ -11,6 +12,7 @@
         #map { height: 100vh; width: 100vw; }
         .popup-content { font-size: 14px; line-height: 1.4; }
         .popup-content b { display: block; margin-bottom: 5px; color: #d32f2f; }
+        .hotel-info { background: #e8f5e9; padding: 5px; border-radius: 4px; font-size: 12px; margin: 5px 0; border-left: 3px solid #4caf50; }
         .parking-info { background: #fff3e0; padding: 5px; border-radius: 4px; font-size: 12px; margin: 5px 0; border-left: 3px solid #ff9800; }
         .nav-btn { display: inline-block; background-color: #4285F4; color: white !important; padding: 8px 12px; margin-top: 8px; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center; width: 100%; }
     </style>
@@ -21,58 +23,31 @@
         const map = L.map('map').setView([35.1676, 136.9060], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
 
+        // --- 行程數據庫：已加入「住宿酒店」欄位 ---
         const itinerary = {
-            "Day 1: 抵達與榮區": { color: '#FF5722', locations: [
-                { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, mapcode: "-", tel: "-", desc: "落機攞車。", parking: "機場專屬租車場" },
-                { name: "山本屋本店", lat: 35.1743, lng: 136.8732, mapcode: "4 163 118*66", tel: "052-482-2428", desc: "味噌烏冬。", parking: "店舖提供免費停車位" },
-                { name: "Oasis 21", lat: 35.1706, lng: 136.9099, mapcode: "4 195 240*36", tel: "-", desc: "榮區夜景。", parking: "建議泊附近露天收費場" }
+            "Day 1: 抵達與入住": { color: '#FF5722', locations: [
+                { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, mapcode: "-", tel: "-", desc: "攞車前往酒店。", parking: "機場租車場", hotel: "" },
+                { name: "名古屋觀光酒店", lat: 35.1675, lng: 136.8975, mapcode: "4 164 250*55", tel: "052-231-7711", desc: "今晚住宿。", parking: "酒店停車場", hotel: "入住酒店" }
             ]},
-            "Day 2: 樂高與夜市": { color: '#2196F3', locations: [
-                { name: "樂高樂園", lat: 35.0507, lng: 136.8436, mapcode: "52 485 581*57", tel: "0570-058-605", desc: "泊市營車場。", parking: "大型市營停車場 (¥1500)" },
-                { name: "東別院夜市", lat: 35.1481, lng: 136.9011, mapcode: "4 167 496*06", tel: "052-321-9201", desc: "8號限定夜市。", parking: "附近小型投幣式停車場" }
-            ]},
-            "Day 3: 牧場與巨公園": { color: '#4CAF50', locations: [
-                { name: "愛知牧場", lat: 35.1458, lng: 137.0817, mapcode: "100 241 180*25", tel: "0561-72-1300", desc: "餵羊駝。", parking: "景點內大型免費停車場" },
-                { name: "LaLaport港明", lat: 35.1098, lng: 136.8836, mapcode: "4 135 776*21", tel: "052-651-3400", desc: "冷氣避暑。", parking: "商場專屬室內停車場" },
-                { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, mapcode: "4 137 775*86", tel: "052-682-5598", desc: "鰻魚飯。", parking: "神宮店專屬停車區" }
-            ]},
-            "Day 4: 鈴鹿賽車場": { color: '#9C27B0', locations: [
-                { name: "鈴鹿賽車場", lat: 34.8438, lng: 136.5333, mapcode: "159 387 508*68", tel: "059-378-1111", desc: "幼童樂園。", parking: "園區專用大型停車場" },
-                { name: "一升びん/藏壽司", lat: 34.8735, lng: 136.5658, mapcode: "159 388 775*41", tel: "059-384-8888", desc: "大型車場。", parking: "連鎖店專屬停車場" }
-            ]},
-            "Day 5: 鮮果與 Outlet": { color: '#E91E63', locations: [
-                { name: "Mitoka 農園", lat: 35.5397, lng: 136.7871, mapcode: "178 304 630*81", tel: "0581-78-5556", desc: "摘葡萄。", parking: "農園外免費停車場" },
-                { name: "長島三井Outlet", lat: 35.0305, lng: 136.7350, mapcode: "4 191 190*33", tel: "0594-45-8700", desc: "P2車場。", parking: "大型立體停車場 (P2)" },
-                { name: "木曾路太平通店", lat: 35.1384, lng: 136.8643, mapcode: "4 136 673*14", tel: "052-362-2321", desc: "壽喜燒。", parking: "店舖專屬停車場" }
-            ]},
-            "Day 6: 常滑 AEON": { color: '#607D8B', locations: [
-                { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, mapcode: "205 383 671*88", tel: "0569-35-7500", desc: "最後衝刺。", parking: "商場免費停車場" },
-                { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, mapcode: "453 800 682*20", tel: "-", desc: "入滿油還車。", parking: "租車公司還車處" }
-            ]}
+            // 你可以繼續加入其他日子的行程，格式如下：
+            // { name: "酒店名稱", lat: 0, lng: 0, mapcode: "-", tel: "-", desc: "休息", parking: "泊車位", hotel: "住宿" }
         };
 
         const overlayMaps = {};
         for (const [dayName, dayData] of Object.entries(itinerary)) {
             const layerGroup = L.layerGroup();
-            const latlngs = dayData.locations.map(loc => [loc.lat, loc.lng]);
-            L.polyline(latlngs, { color: dayData.color, weight: 4, dashArray: '5, 10' }).addTo(layerGroup);
-
             dayData.locations.forEach((loc, index) => {
                 const navUrl = "https://www.google.com/maps/dir/?api=1&destination=LAT,LNG" + loc.lat + "," + loc.lng + "&travelmode=driving";
-                let dist = "";
-                if (index < dayData.locations.length - 1) {
-                    const next = dayData.locations[index + 1];
-                    const d = map.distance([loc.lat, loc.lng], [next.lat, next.lng]) / 1000;
-                    dist = `<p style="font-size:12px; color:#666; margin:5px 0;">➡️ 下站: ${d.toFixed(1)} km (約 ${Math.round(d/40*60)} 分)</p>`;
-                }
+                
+                // 顯示邏輯：如果有 hotel 欄位，就顯示酒店 icon
+                const infoBox = loc.hotel ? `<div class="hotel-info">🏨 住宿: ${loc.name}</div>` : `<div class="parking-info">🅿️ 泊車: ${loc.parking}</div>`;
                 
                 const marker = L.marker([loc.lat, loc.lng]).addTo(layerGroup);
                 marker.bindPopup(`
                     <div class="popup-content">
-                        <b>${index === 0 ? '🟢 起點: ' : (index === dayData.locations.length - 1 ? '🔴 終點: ' : '📍 ')}${loc.name}</b>
+                        <b>${index === 0 ? '🟢 起點: ' : '📍 '}${loc.name}</b>
                         <p style="margin:5px 0;">Map: ${loc.mapcode}<br>Tel: ${loc.tel}</p>
-                        <div class="parking-info">🅿️ 泊車: ${loc.parking}</div>
-                        ${dist}
+                        ${infoBox}
                         <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
                     </div>
                 `);
