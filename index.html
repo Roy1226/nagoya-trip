@@ -17,8 +17,8 @@
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 20px; overflow-y: auto; }
         .info-card { padding: 15px; border: 1px solid #ddd; border-radius: 12px; margin: 10px; background: white; }
         .meta-box { font-size: 13px; color: #444; margin: 8px 0; padding: 8px; background: #f8f9fa; border-left: 4px solid #4285F4; }
-        .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
-        .btn { padding: 8px 2px; border-radius: 6px; text-align: center; color: white; font-weight: bold; text-decoration: none; font-size: 11px; }
+        .btn-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+        .btn { padding: 6px 2px; border-radius: 6px; text-align: center; color: white; font-weight: bold; text-decoration: none; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -34,7 +34,7 @@
     </div>
     
     <div id="modal">
-        <button onclick="togglePreview()" style="float:right;">關閉</button>
+        <button onclick="togglePreview()" style="float:right; padding: 10px;">關閉</button>
         <h2>全行程總覽</h2>
         <div id="preview-content"></div>
     </div>
@@ -48,35 +48,34 @@
 
         const itinerary = {
             "Day 1": [
-                { name: "機場攞車", time: "16:00", tel: "0569-38-1195", lat: 34.8583, lng: 136.8115, addr: "愛知県常滑市セントレア1丁目1番地" },
-                { name: "山本屋本店 大門本店", time: "18:00", tel: "052-482-2428", lat: 35.1743, lng: 136.8732, addr: "愛知県名古屋市中村区太閤通6-5" },
-                { name: "榮商圈 (Oasis 21)", time: "19:30", tel: "-", lat: 35.1723, lng: 136.9083, addr: "名古屋市榮區" },
-                { name: "日航尚格酒店", time: "21:00", tel: "052-211-8050", lat: 35.1706, lng: 136.8920, addr: "愛知県名古屋市中村区名駅5丁目20-13" }
+                { name: "機場攞車", time: "16:00", tel: "0569-38-1195", mapcode: "453 800 682*20", lat: 34.8583, lng: 136.8115, addr: "常滑市セントレア1丁目" },
+                { name: "山本屋本店 大門本店", time: "18:00", tel: "052-482-2428", mapcode: "4 163 118*66", lat: 35.1743, lng: 136.8732, addr: "名古屋市中村区太閤通6-5" },
+                { name: "榮商圈 (Oasis 21)", time: "19:30", tel: "-", mapcode: "4 165 572*67", lat: 35.1723, lng: 136.9083, addr: "名古屋市榮區" },
+                { name: "日航尚格酒店", time: "21:00", tel: "052-211-8050", mapcode: "4 164 125*44", lat: 35.1706, lng: 136.8920, addr: "名古屋市中村区名駅5-20-13" }
             ],
             "Day 2": [
-                { name: "樂高樂園", time: "10:00", tel: "0570-058-605", lat: 35.0507, lng: 136.8436, addr: "名古屋市港區金城埠頭" },
-                { name: "SEA LIFE 名古屋", time: "15:30", tel: "0570-058-605", lat: 35.0507, lng: 136.8436, addr: "名古屋市港區金城埠頭" },
-                { name: "東別院夜市", time: "17:30", tel: "052-321-9201", lat: 35.1481, lng: 136.9011, addr: "愛知県名古屋市中区橘2丁目8-55" }
+                { name: "樂高樂園", time: "10:00", tel: "0570-058-605", mapcode: "52 485 581*57", lat: 35.0507, lng: 136.8436, addr: "名古屋市港區金城埠頭" },
+                { name: "SEA LIFE 名古屋", time: "15:30", tel: "0570-058-605", mapcode: "52 485 581*57", lat: 35.0507, lng: 136.8436, addr: "名古屋市港區金城埠頭" },
+                { name: "東別院夜市", time: "17:30", tel: "052-321-9201", mapcode: "4 167 496*06", lat: 35.1481, lng: 136.9011, addr: "名古屋市中区橘2-8-55" }
             ],
             "Day 3": [
-                { name: "愛知牧場", time: "09:05", tel: "0561-72-1300", lat: 35.1458, lng: 137.0817, addr: "愛知県日進市米野木町" },
-                { name: "LaLaport 名古屋港明", time: "12:15", tel: "052-651-3400", lat: 35.1321, lng: 136.8876, addr: "名古屋市港區港明" },
-                { name: "戶田川綠地公園", time: "15:00", tel: "-", lat: 35.1215, lng: 136.8291, addr: "名古屋市港區春田野" },
-                { name: "あつた蓬莱軒", time: "17:30", tel: "052-682-5598", lat: 35.1264, lng: 136.9069, addr: "愛知県名古屋市熱田区神戸町503" }
+                { name: "愛知牧場", time: "09:05", tel: "0561-72-1300", mapcode: "100 241 180*25", lat: 35.1458, lng: 137.0817, addr: "日進市米野木町" },
+                { name: "LaLaport 名古屋港明", time: "12:15", tel: "052-651-3400", mapcode: "4 139 524*55", lat: 35.1321, lng: 136.8876, addr: "名古屋市港區港明" },
+                { name: "戶田川綠地公園", time: "15:00", tel: "-", mapcode: "4 104 220*70", lat: 35.1215, lng: 136.8291, addr: "名古屋市港區春田野" },
+                { name: "あつた蓬莱軒", time: "17:30", tel: "052-682-5598", mapcode: "4 137 775*86", lat: 35.1264, lng: 136.9069, addr: "熱田区神戸町503" }
             ],
             "Day 4": [
-                { name: "鈴鹿賽車場", time: "10:00", tel: "059-378-1111", lat: 34.8438, lng: 136.5333, addr: "三重県鈴鹿市稲生町7992" },
-                { name: "晚餐 (燒肉/壽司)", time: "17:30", tel: "-", lat: 34.8735, lng: 136.5658, addr: "鈴鹿市內" },
-                { name: "Suzuka Inn 民宿", time: "19:00", tel: "-", lat: 34.8735, lng: 136.5658, addr: "鈴鹿市內" }
+                { name: "鈴鹿賽車場", time: "10:00", tel: "059-378-1111", mapcode: "159 387 508*68", lat: 34.8438, lng: 136.5333, addr: "鈴鹿市稲生町7992" },
+                { name: "Suzuka Inn 民宿", time: "19:00", tel: "-", mapcode: "-", lat: 34.8735, lng: 136.5658, addr: "鈴鹿市內" }
             ],
             "Day 5": [
-                { name: "Mitoka 農園", time: "10:00", tel: "0581-78-5556", lat: 35.5397, lng: 136.7871, addr: "岐阜県山県市小倉726-1" },
-                { name: "長島三井 Outlet", time: "14:15", tel: "0594-45-8700", lat: 35.0305, lng: 136.7350, addr: "三重県桑名市長島町浦安368" },
-                { name: "木曾路 太平通店", time: "18:30", tel: "052-362-2321", lat: 35.1384, lng: 136.8643, addr: "愛知県名古屋市中川区太平通4丁目21" }
+                { name: "Mitoka 農園", time: "10:00", tel: "0581-78-5556", mapcode: "178 304 630*81", lat: 35.5397, lng: 136.7871, addr: "山県市小倉726-1" },
+                { name: "長島三井 Outlet", time: "14:15", tel: "0594-45-8700", mapcode: "4 191 190*33", lat: 35.0305, lng: 136.7350, addr: "桑名市長島町浦安368" },
+                { name: "木曾路 太平通店", time: "18:30", tel: "052-362-2321", mapcode: "4 135 241*10", lat: 35.1384, lng: 136.8643, addr: "中川区太平通4-21" }
             ],
             "Day 6": [
-                { name: "常滑 AEON", time: "10:00", tel: "0569-35-7500", lat: 34.8966, lng: 136.8288, addr: "愛知県常滑市りんくう町2丁目20-3" },
-                { name: "機場 (還車)", time: "13:00", tel: "0569-38-1195", lat: 34.8583, lng: 136.8115, addr: "中部國際機場" }
+                { name: "常滑 AEON", time: "10:00", tel: "0569-35-7500", mapcode: "205 383 671*88", lat: 34.8966, lng: 136.8288, addr: "常滑市りんくう町2-20-3" },
+                { name: "機場 (還車)", time: "13:00", tel: "0569-38-1195", mapcode: "453 800 682*20", lat: 34.8583, lng: 136.8115, addr: "中部國際機場" }
             ]
         };
 
@@ -97,7 +96,7 @@
             document.getElementById('details').innerHTML = itinerary[day].map(loc => `
                 <div class="info-card">
                     <b>${loc.name} (${loc.time})</b>
-                    <div class="meta-box">📍 ${loc.addr}<br>📞 <a href="tel:${loc.tel}">${loc.tel}</a></div>
+                    <div class="meta-box">📍 ${loc.addr}<br>📟 Mapcode: ${loc.mapcode}<br>📞 <a href="tel:${loc.tel}">${loc.tel}</a></div>
                     <div class="btn-group">
                         <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" class="btn" style="background:#4285F4">🚗 導航</a>
                         <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" class="btn" style="background:#00bcd4">👀 實景</a>
