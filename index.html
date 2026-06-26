@@ -111,7 +111,7 @@
             details.innerHTML = itinerary[day].map((loc, index) => {
                 let icon = index === 0 ? "🟢" : (index === itinerary[day].length - 1 ? "🔴" : "📍");
                 
-                // 完全修正：使用 Google Maps 官方標準 API 連結格式
+                // 完美修正：使用標準 Google Maps 參數
                 const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
                 const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}`;
                 const parkUrl = `https://www.google.com/maps/search/平置き+駐車場/@${loc.lat},${loc.lng},16z`;
