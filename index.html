@@ -7,14 +7,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f5f5; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0; }
         #map { height: 35vh; width: 100%; }
         #menu { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #fff; border-bottom: 1px solid #ddd; }
         .day-btn { flex: 1 1 calc(33.333% - 6px); padding: 10px 0; background: #e0e0e0; border-radius: 8px; text-align: center; font-size: 13px; font-weight: bold; cursor: pointer; }
         .day-btn.active { background: #4285F4; color: white; }
-        #preview-btn { width: 95%; margin: 10px auto; display: block; padding: 12px; background: #333; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; }
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; padding: 20px; overflow-y: auto; }
+        #preview-btn { width: 95%; margin: 10px auto; display: block; padding: 12px; background: #333; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .info-card { padding: 15px; border: 1px solid #ddd; border-radius: 12px; margin: 10px; background: white; }
         .meta-box { font-size: 13px; color: #444; margin: 8px 0; padding: 8px; background: #f8f9fa; border-left: 4px solid #4285F4; }
         .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
@@ -23,7 +21,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <button id="preview-btn" onclick="togglePreview()">📋 全行程總覽預覽</button>
+    <button id="preview-btn" onclick="alert('Hiace 注意事項: 嚴禁室內停車場，限高 2.1m 以下勿入！')">⚠️ Hiace 行車須知</button>
     <div id="menu">
         <div class="day-btn" id="btn-Day1" onclick="showDay('Day 1')">Day 1</div>
         <div class="day-btn" id="btn-Day2" onclick="showDay('Day 2')">Day 2</div>
@@ -32,75 +30,31 @@
         <div class="day-btn" id="btn-Day5" onclick="showDay('Day 5')">Day 5</div>
         <div class="day-btn" id="btn-Day6" onclick="showDay('Day 6')">Day 6</div>
     </div>
-    
-    <div id="modal">
-        <button onclick="togglePreview()" style="float:right;">關閉</button>
-        <h2>全行程總覽</h2>
-        <div id="preview-content"></div>
-    </div>
     <div id="details"></div>
 
     <script>
         const map = L.map('map').setView([35.1676, 136.8920], 11);
         L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}').addTo(map);
-        let markers = L.layerGroup().addTo(map);
-        let polyline = L.polyline([], {color: '#4285F4', weight: 5}).addTo(map);
-
+        
         const itinerary = {
-            "Day 1": [
-                { name: "機場攞車", time: "16:00", tel: "0569-38-1195", lat: 34.8583, lng: 136.8115, addr: "愛知県常滑市セントレア1丁目1番地" },
-                { name: "山本屋本店 大門本店", time: "18:00", tel: "052-482-2428", lat: 35.1743, lng: 136.8732, addr: "愛知県名古屋市中村区太閤通6-5" },
-                { name: "榮商圈 (Oasis 21)", time: "19:30", tel: "-", lat: 35.1723, lng: 136.9083, addr: "名古屋市榮區" },
-                { name: "日航尚格酒店", time: "21:00", tel: "052-211-8050", lat: 35.1706, lng: 136.8920, addr: "愛知県名古屋市中村区名駅5丁目20-13" }
-            ],
-            "Day 2": [
-                { name: "樂高樂園", time: "10:00", tel: "0570-058-605", lat: 35.0507, lng: 136.8436, addr: "名古屋市港區金城埠頭" },
-                { name: "SEA LIFE 名古屋", time: "15:30", tel: "0570-058-605", lat: 35.0507, lng: 136.8436, addr: "名古屋市港區金城埠頭" },
-                { name: "東別院夜市", time: "17:30", tel: "052-321-9201", lat: 35.1481, lng: 136.9011, addr: "愛知県名古屋市中区橘2丁目8-55" }
-            ],
-            "Day 3": [
-                { name: "愛知牧場", time: "09:05", tel: "0561-72-1300", lat: 35.1458, lng: 137.0817, addr: "愛知県日進市米野木町" },
-                { name: "LaLaport 名古屋港明", time: "12:15", tel: "052-651-3400", lat: 35.1321, lng: 136.8876, addr: "名古屋市港區港明" },
-                { name: "戶田川綠地公園", time: "15:00", tel: "-", lat: 35.1215, lng: 136.8291, addr: "名古屋市港區春田野" },
-                { name: "あつた蓬莱軒", time: "17:30", tel: "052-682-5598", lat: 35.1264, lng: 136.9069, addr: "愛知県名古屋市熱田区神戸町503" }
-            ],
-            "Day 4": [
-                { name: "鈴鹿賽車場", time: "10:00", tel: "059-378-1111", lat: 34.8438, lng: 136.5333, addr: "三重県鈴鹿市稲生町7992" },
-                { name: "晚餐 (燒肉/壽司)", time: "17:30", tel: "-", lat: 34.8735, lng: 136.5658, addr: "鈴鹿市內" },
-                { name: "Suzuka Inn 民宿", time: "19:00", tel: "-", lat: 34.8735, lng: 136.5658, addr: "鈴鹿市內" }
-            ],
-            "Day 5": [
-                { name: "Mitoka 農園", time: "10:00", tel: "0581-78-5556", lat: 35.5397, lng: 136.7871, addr: "岐阜県山県市小倉726-1" },
-                { name: "長島三井 Outlet", time: "14:15", tel: "0594-45-8700", lat: 35.0305, lng: 136.7350, addr: "三重県桑名市長島町浦安368" },
-                { name: "木曾路 太平通店", time: "18:30", tel: "052-362-2321", lat: 35.1384, lng: 136.8643, addr: "愛知県名古屋市中川区太平通4丁目21" }
-            ],
-            "Day 6": [
-                { name: "常滑 AEON", time: "10:00", tel: "0569-35-7500", lat: 34.8966, lng: 136.8288, addr: "愛知県常滑市りんくう町2丁目20-3" },
-                { name: "機場 (還車)", time: "13:00", tel: "0569-38-1195", lat: 34.8583, lng: 136.8115, addr: "中部國際機場" }
-            ]
+            "Day 1": [{ name: "山本屋本店", time: "18:00", tel: "052-482-2428", addr: "愛知県名古屋市中村区太閤通6-5" }, { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", addr: "愛知県名古屋市中村区名駅5丁目20-13" }],
+            "Day 2": [{ name: "樂高樂園", time: "10:00", tel: "0570-058-605", addr: "名古屋市港區金城埠頭" }, { name: "東別院夜市", time: "17:30", tel: "052-321-9201", addr: "愛知県名古屋市中区橘2丁目8-55" }],
+            "Day 3": [{ name: "愛知牧場", time: "09:05", tel: "0561-72-1300", addr: "愛知県日進市米野木町" }, { name: "あつた蓬莱軒", time: "17:30", tel: "052-682-5598", addr: "愛知県名古屋市熱田区神戸町503" }],
+            "Day 4": [{ name: "鈴鹿賽車場", time: "10:00", tel: "059-378-1111", addr: "三重県鈴鹿市稲生町7992" }],
+            "Day 5": [{ name: "Mitoka 農園", time: "10:00", tel: "0581-78-5556", addr: "岐阜県山県市小倉726-1" }, { name: "長島三井Outlet", time: "14:15", tel: "0594-45-8700", addr: "三重県桑名市長島町浦安368" }, { name: "木曾路太平通店", time: "18:30", tel: "052-362-2321", addr: "愛知県名古屋市中川区太平通4丁目21" }],
+            "Day 6": [{ name: "常滑 AEON", time: "10:00", tel: "0569-35-7500", addr: "愛知県常滑市りんくう町2丁目20-3" }]
         };
-
-        function togglePreview() {
-            const m = document.getElementById('modal');
-            m.style.display = m.style.display === 'block' ? 'none' : 'block';
-            document.getElementById('preview-content').innerHTML = Object.keys(itinerary).map(d => `<h3>${d}</h3><ul>${itinerary[d].map(l => `<li>${l.time} - ${l.name}</li>`).join('')}</ul>`).join('');
-        }
 
         function showDay(day) {
             document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('btn-' + day.replace(' ', '')).classList.add('active');
-            markers.clearLayers();
-            const lls = itinerary[day].map(l => [l.lat, l.lng]);
-            polyline.setLatLngs(lls);
-            itinerary[day].forEach(l => L.marker([l.lat, l.lng]).addTo(markers).bindPopup(l.name));
-            map.fitBounds(lls, { padding: [50, 50] });
             document.getElementById('details').innerHTML = itinerary[day].map(loc => `
                 <div class="info-card">
                     <b>${loc.name} (${loc.time})</b>
                     <div class="meta-box">📍 ${loc.addr}<br>📞 <a href="tel:${loc.tel}">${loc.tel}</a></div>
                     <div class="btn-group">
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" class="btn" style="background:#4285F4">🚗 導航</a>
-                        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" class="btn" style="background:#00bcd4">👀 實景</a>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=$" class="btn" style="background:#4285F4">🚗 導航</a>
+                        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=$" class="btn" style="background:#00bcd4">👀 實景</a>
                         <a href="https://docs.google.com/forms/d/e/1FAIpQLSfl-B4eJPRgQ-dlXdrVvjXaUOGqf3CJIMA9fXpodP6qRTBlzg/viewform" class="btn" style="background:#9c27b0">📸 收據</a>
                     </div>
                 </div>
