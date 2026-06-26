@@ -98,6 +98,9 @@
         };
 
         function showDay(day) {
+            // 修正手機版地圖縮放問題
+            map.invalidateSize();
+
             // 更新按鈕樣式
             document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-' + day.replace(' ', '')).classList.add('active');
@@ -108,6 +111,7 @@
             details.innerHTML = itinerary[day].map((loc, index) => {
                 let icon = index === 0 ? "🟢" : (index === itinerary[day].length - 1 ? "🔴" : "📍");
                 
+                // 完全修正：使用 Google Maps 官方標準 API 連結格式
                 const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
                 const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}`;
                 const parkUrl = `https://www.google.com/maps/search/平置き+駐車場/@${loc.lat},${loc.lng},16z`;
@@ -151,7 +155,7 @@
             // 畫路線
             polyline = L.polyline(latlngs, { color: '#d32f2f', weight: 4, dashArray: '8, 8' }).addTo(map);
 
-            // 自動縮放地圖
+            // 自動縮放地圖至適當範圍
             map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
         }
     </script>
