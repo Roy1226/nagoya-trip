@@ -3,83 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名古屋 6日5夜自駕遊</title>
+    <title>名古屋 6日自駕指揮中心</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
-        #map { height: 100vh; width: 100vw; }
-        .popup-content { font-size: 14px; line-height: 1.4; }
-        .popup-content b { display: block; margin-bottom: 5px; color: #d32f2f; }
-        .hotel-info { background: #e8f5e9; padding: 5px; border-radius: 4px; font-size: 12px; margin: 5px 0; border-left: 3px solid #4caf50; }
-        .parking-info { background: #fff3e0; padding: 5px; border-radius: 4px; font-size: 12px; margin: 5px 0; border-left: 3px solid #ff9800; }
-        .nav-btn { display: inline-block; background-color: #4285F4; color: white !important; padding: 8px 12px; margin-top: 8px; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center; width: 100%; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; display: flex; }
+        #map { flex: 2; height: 100vh; }
+        #info-panel { flex: 1; height: 100vh; overflow-y: auto; padding: 20px; background: #fff; border-left: 3px solid #eee; }
+        .item { padding: 10px; border-bottom: 1px solid #f0f0f0; margin-bottom: 10px; }
+        b { color: #d32f2f; }
+        .nav-btn { display: inline-block; background-color: #4285F4; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px; margin-top: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="map"></div>
+    <div id="info-panel">
+        <h2 id="panel-title">請在地圖選取日期</h2>
+        <div id="details"></div>
+    </div>
+
     <script>
         const map = L.map('map').setView([35.1676, 136.8920], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
         const itinerary = {
-            "Day 1": { color: '#FF5722', locations: [
-                { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, mapcode: "453 800 682*20", tel: "-", parking: "租車場", isHotel: false },
-                { name: "山本屋本店", lat: 35.1743, lng: 136.8732, mapcode: "4 163 118*66", tel: "052-482-2428", parking: "免費車位", isHotel: false },
-                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true }
+            "Day 1": { locations: [
+                { name: "機場 (攞車)", lat: 34.8583, lng: 136.8115, tel: "-", mapcode: "453 800 682*20", parking: "租車專用場" },
+                { name: "山本屋本店", lat: 35.1743, lng: 136.8732, tel: "052-482-2428", mapcode: "4 163 118*66", parking: "免費車位" },
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場" }
             ]},
-            "Day 2": { color: '#2196F3', locations: [
-                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true },
-                { name: "樂高樂園", lat: 35.0507, lng: 136.8436, mapcode: "52 485 581*57", tel: "0570-058-605", parking: "市營車場", isHotel: false },
-                { name: "東別院夜市", lat: 35.1481, lng: 136.9011, mapcode: "4 167 496*06", tel: "052-321-9201", parking: "投幣停車場", isHotel: false }
+            "Day 2": { locations: [
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場" },
+                { name: "樂高樂園", lat: 35.0507, lng: 136.8436, tel: "0570-058-605", mapcode: "52 485 581*57", parking: "市營大型車場" },
+                { name: "東別院夜市", lat: 35.1481, lng: 136.9011, tel: "052-321-9201", mapcode: "4 167 496*06", parking: "投幣停車場" }
             ]},
-            "Day 3": { color: '#4CAF50', locations: [
-                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true },
-                { name: "愛知牧場", lat: 35.1458, lng: 137.0817, mapcode: "100 241 180*25", tel: "0561-72-1300", parking: "大型免費場", isHotel: false },
-                { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, mapcode: "4 137 775*86", tel: "052-682-5598", parking: "專屬停車區", isHotel: false }
+            "Day 3": { locations: [
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場" },
+                { name: "愛知牧場", lat: 35.1458, lng: 137.0817, tel: "0561-72-1300", mapcode: "100 241 180*25", parking: "大型免費場" },
+                { name: "あつた蓬莱軒", lat: 35.1264, lng: 136.9069, tel: "052-682-5598", mapcode: "4 137 775*86", parking: "專屬停車區" }
             ]},
-            "Day 4": { color: '#9C27B0', locations: [
-                { name: "鈴鹿賽車場", lat: 34.8438, lng: 136.5333, mapcode: "159 387 508*68", tel: "059-378-1111", parking: "園區專用場", isHotel: false },
-                { name: "鈴鹿市區酒店", lat: 34.8735, lng: 136.5658, mapcode: "-", tel: "-", parking: "酒店專屬場", isHotel: true }
+            "Day 4": { locations: [
+                { name: "鈴鹿賽車場", lat: 34.8438, lng: 136.5333, tel: "059-378-1111", mapcode: "159 387 508*68", parking: "園區專用場" },
+                { name: "鈴鹿市區酒店", lat: 34.8735, lng: 136.5658, tel: "-", mapcode: "-", parking: "酒店專屬場" }
             ]},
-            "Day 5": { color: '#E91E63', locations: [
-                { name: "鈴鹿市區酒店", lat: 34.8735, lng: 136.5658, mapcode: "-", tel: "-", parking: "酒店專屬場", isHotel: true },
-                { name: "Mitoka 農園", lat: 35.5397, lng: 136.7871, mapcode: "178 304 630*81", tel: "0581-78-5556", parking: "免費車場", isHotel: false },
-                { name: "長島三井Outlet", lat: 35.0305, lng: 136.7350, mapcode: "4 191 190*33", tel: "0594-45-8700", parking: "立體停車場", isHotel: false },
-                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true }
+            "Day 5": { locations: [
+                { name: "鈴鹿市區酒店", lat: 34.8735, lng: 136.5658, tel: "-", mapcode: "-", parking: "酒店專屬場" },
+                { name: "Mitoka 農園", lat: 35.5397, lng: 136.7871, tel: "0581-78-5556", mapcode: "178 304 630*81", parking: "免費車場" },
+                { name: "長島三井Outlet", lat: 35.0305, lng: 136.7350, tel: "0594-45-8700", mapcode: "4 191 190*33", parking: "立體停車場" },
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場" }
             ]},
-            "Day 6": { color: '#607D8B', locations: [
-                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, mapcode: "4 164 125*44", tel: "052-211-8050", parking: "酒店停車場", isHotel: true },
-                { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, mapcode: "205 383 671*88", tel: "0569-35-7500", parking: "商場免費場", isHotel: false },
-                { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, mapcode: "453 800 682*20", tel: "-", parking: "租車還車處", isHotel: false }
+            "Day 6": { locations: [
+                { name: "日航尚格酒店", lat: 35.1706, lng: 136.8920, tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場" },
+                { name: "常滑 AEON", lat: 34.8966, lng: 136.8288, tel: "0569-35-7500", mapcode: "205 383 671*88", parking: "商場免費場" },
+                { name: "機場 (還車)", lat: 34.8583, lng: 136.8115, tel: "-", mapcode: "453 800 682*20", parking: "租車還車處" }
             ]}
         };
 
-        const overlayMaps = {};
-        Object.entries(itinerary).forEach(([dayName, dayData]) => {
-            const layerGroup = L.layerGroup();
-            const latlngs = dayData.locations.map(loc => [loc.lat, loc.lng]);
-            L.polyline(latlngs, { color: dayData.color, weight: 4, dashArray: '5, 10' }).addTo(layerGroup);
-
-            dayData.locations.forEach((loc, index) => {
-                const navUrl = "https://www.google.com/maps/dir/?api=1&destination=LAT,LNG" + loc.lat + "," + loc.lng + "&travelmode=driving";
-                const icon = loc.isHotel ? "🏨" : (index === 0 ? "🟢" : (index === dayData.locations.length - 1 ? "🔴" : "📍"));
-                const infoBox = loc.isHotel ? `<div class="hotel-info">🏨 住宿: ${loc.name}</div>` : `<div class="parking-info">🅿️ 泊車: ${loc.parking}</div>`;
-                
-                L.marker([loc.lat, loc.lng]).addTo(layerGroup).bindPopup(`
-                    <div class="popup-content">
-                        <b>${icon} ${loc.name}</b>
-                        <p style="margin:5px 0;">Map: ${loc.mapcode}<br>Tel: ${loc.tel}</p>
-                        ${infoBox}
-                        <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航至此</a>
-                    </div>
-                `);
+        const overlays = {};
+        Object.keys(itinerary).forEach(day => {
+            const group = L.layerGroup();
+            itinerary[day].locations.forEach(loc => {
+                L.marker([loc.lat, loc.lng]).addTo(group).bindPopup(`<b>${loc.name}</b><br>Mapcode: ${loc.mapcode}`);
             });
-            overlayMaps[dayName] = layerGroup;
-            // 預設全部關閉，只顯示 Day 1
-            if(dayName === "Day 1") layerGroup.addTo(map);
+            overlays[day] = group;
         });
-        L.control.layers(null, overlayMaps, {collapsed: false}).addTo(map);
+        L.control.layers(null, overlays, {collapsed: false}).addTo(map);
+
+        map.on('overlayadd', (e) => {
+            document.getElementById('panel-title').innerText = e.name + " 詳情";
+            document.getElementById('details').innerHTML = itinerary[e.name].locations.map(loc => `
+                <div class="item">
+                    <b>${loc.name}</b><br>
+                    📍 Mapcode: ${loc.mapcode}<br>
+                    📞 電話: ${loc.tel}<br>
+                    🅿️ 泊車: ${loc.parking}<br>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=$${loc.lat},${loc.lng}&travelmode=driving" target="_blank" class="nav-btn">🚗 導航至此</a>
+                </div>
+            `).join('');
+        });
     </script>
 </body>
 </html>
