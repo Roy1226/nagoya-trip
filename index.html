@@ -9,32 +9,19 @@
     <style>
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; background-color: #f5f5f5; }
-        
-        /* 地圖區域：固定佔手機上半截 40% 高度 */
         #map { flex: 0 0 40vh; width: 100%; z-index: 1; }
-        
-        /* 選單區域：確保橫向排版唔會走位 */
         #menu { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: #e0e0e0; z-index: 2; }
-        .day-btn { flex: 1 1 calc(33.333% - 8px); padding: 10px 0; background: #fff; border: 2px solid #ccc; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; color: #333; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .day-btn { flex: 1 1 calc(33.333% - 8px); padding: 10px 0; background: #fff; border: 2px solid #ccc; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; color: #333; cursor: pointer; }
         .day-btn:active, .day-btn.active { background: #d32f2f; color: white; border-color: #d32f2f; }
-        
-        /* 資訊區域：佔據剩餘空間，可上下捲動 */
         #info-panel { flex: 1 1 auto; overflow-y: auto; padding: 15px; background: #fff; }
-        .item { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .item { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
         b { color: #d32f2f; font-size: 16px; display: block; margin-bottom: 5px; }
-        .desc { font-size: 14px; color: #555; margin: 8px 0; line-height: 1.5; }
-        .tip { font-size: 13px; color: #d84315; background: #fff3e0; padding: 10px; border-radius: 5px; margin: 8px 0; font-weight: 500; line-height: 1.4; border-left: 4px solid #ff9800; }
-        
-        /* 按鈕群組排版 */
-        .btn-group { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+        .tip { font-size: 13px; color: #333; background: #f9f9f9; padding: 10px; border-radius: 5px; margin: 8px 0; border-left: 4px solid #4285F4; }
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
         .nav-btn, .view-btn, .park-btn { flex: 1 1 45%; color: white; padding: 10px 0; text-decoration: none; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; }
         .nav-btn { background-color: #4285F4; }
         .view-btn { background-color: #34a853; }
         .park-btn { flex: 1 1 100%; background-color: #ff9800; }
-
-        /* 修正 Leaflet 地圖彈出視窗內的文字排版 */
-        .leaflet-popup-content { font-size: 14px; line-height: 1.6; }
-        .leaflet-popup-content b { color: #d32f2f; font-size: 15px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -48,114 +35,74 @@
         <div class="day-btn" id="btn-Day6" onclick="showDay('Day 6')">Day 6</div>
     </div>
     <div id="info-panel">
-        <h2 id="panel-title" style="margin-top:0; font-size: 18px;">請點選上方日期按鈕</h2>
-        <div id="details">
-            <p style="color: #666; font-size: 14px;">點選上方的 Day 1 - Day 6 來載入當天的行車路線、導航資訊及泊車提示。</p>
-        </div>
+        <h2 id="panel-title" style="margin-top:0; font-size: 18px;">請點選上方日期</h2>
+        <div id="details"></div>
     </div>
 
     <script>
         const map = L.map('map').setView([35.1676, 136.8920], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        let markers = [];
-        let polyline = null;
+        let markers = []; let polyline = null;
 
         const itinerary = {
             "Day 1": [
-                { name: "機場 (攞車)", time: "16:00", tel: "-", mapcode: "453 800 682*20", parking: "租車場", desc: "落機攞車，安頓行李 + BB 車入大背囊。", lat: 34.8583, lng: 136.8115 },
-                { name: "山本屋本店", time: "18:00", tel: "052-482-2428", mapcode: "4 163 118*66", parking: "免費停車場", desc: "晚餐：正宗味噌煮烏冬。", lat: 35.1743, lng: 136.8732 },
-                { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "前往榮區散步打卡，返回酒店休息。", lat: 35.1706, lng: 136.8920 }
+                { name: "機場 (攞車)", time: "16:00", tel: "-", mapcode: "453 800 682*20", addr: "愛知県常滑市セントレア1丁目1番地", lat: 34.8583, lng: 136.8115 },
+                { name: "山本屋本店", time: "18:00", tel: "052-482-2428", mapcode: "4 163 118*66", addr: "愛知県名古屋市中村区太閤通6-5", lat: 35.1743, lng: 136.8732 },
+                { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 }
             ],
             "Day 2": [
-                { name: "日航尚格酒店", time: "09:15", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "準備出發，車程約25分鐘。", lat: 35.1706, lng: 136.8920 },
-                { name: "樂高樂園", time: "10:00", tel: "0570-058-605", mapcode: "52 485 581*57", parking: "市營金城埠頭 (限高注意)", desc: "親子瘋狂玩樂高，下午去 SEA LIFE 涼冷氣。", lat: 35.0507, lng: 136.8436 },
-                { name: "東別院夜市", time: "17:30", tel: "052-321-9201", mapcode: "4 167 496*06", parking: "附近露天 Coin Parking", desc: "8號夏日限定夜市，掃街食現場美食車。", lat: 35.1481, lng: 136.9011 },
-                { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "買外賣返酒店宵夜休息。", lat: 35.1706, lng: 136.8920 }
+                { name: "日航尚格酒店", time: "09:15", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 },
+                { name: "樂高樂園", time: "10:00", tel: "0570-058-605", mapcode: "52 485 581*57", addr: "愛知県名古屋市港区金城ふ頭2丁目2-1", lat: 35.0507, lng: 136.8436 },
+                { name: "東別院夜市", time: "17:30", tel: "052-321-9201", mapcode: "4 167 496*06", addr: "愛知県名古屋市中区橘2丁目8-55", lat: 35.1481, lng: 136.9011 },
+                { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 }
             ],
             "Day 3": [
-                { name: "日航尚格酒店", time: "08:30", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "帶齊裝備出發，車程約35分鐘。", lat: 35.1706, lng: 136.8920 },
-                { name: "愛知牧場", time: "09:05", tel: "0561-72-1300", mapcode: "100 241 180*25", parking: "內設大型免費場", desc: "免門票，親近餵羊駝/山羊 + 睇8月向日葵花海。", lat: 35.1458, lng: 137.0817 },
-                { name: "あつた蓬莱軒", time: "17:30", tel: "052-682-5598", mapcode: "4 137 775*86", parking: "設專屬停車區", desc: "神宮店/本店食鰻魚飯，切勿去松坂屋店以免受限高影響。", lat: 35.1264, lng: 136.9069 },
-                { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "返回酒店休息。", lat: 35.1706, lng: 136.8920 }
+                { name: "日航尚格酒店", time: "08:30", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 },
+                { name: "愛知牧場", time: "09:05", tel: "0561-72-1300", mapcode: "100 241 180*25", addr: "愛知県日進市米野木町南山977", lat: 35.1458, lng: 137.0817 },
+                { name: "あつた蓬莱軒", time: "17:30", tel: "052-682-5598", mapcode: "4 137 775*86", addr: "愛知県名古屋市熱田区神戸町503", lat: 35.1264, lng: 136.9069 },
+                { name: "日航尚格酒店", time: "20:00", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 }
             ],
             "Day 4": [
-                { name: "日航尚格酒店", time: "08:30", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "Check-out 兼帶齊全車行李出發，避開返工車龍。", lat: 35.1706, lng: 136.8920 },
-                { name: "鈴鹿賽車場", time: "10:00", tel: "059-378-1111", mapcode: "159 387 508*68", parking: "園區專用場", desc: "專為幼童設嘅賽車樂園，高溫注意防曬。", lat: 34.8438, lng: 136.5333 },
-                { name: "Suzuka Inn 單幢民宿", time: "18:00", tel: "-", mapcode: "-", parking: "民宿專屬車位", desc: "買完消夜直接返新民宿拆箱休息！", lat: 34.8735, lng: 136.5658 }
+                { name: "日航尚格酒店", time: "08:30", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 },
+                { name: "鈴鹿賽車場", time: "10:00", tel: "059-378-1111", mapcode: "159 387 508*68", addr: "三重県鈴鹿市稲生町7992", lat: 34.8438, lng: 136.5333 },
+                { name: "Suzuka Inn 民宿", time: "18:00", tel: "-", mapcode: "-", addr: "三重縣鈴鹿市內民宿", lat: 34.8735, lng: 136.5658 }
             ],
             "Day 5": [
-                { name: "Suzuka Inn 單幢民宿", time: "08:45", tel: "-", mapcode: "-", parking: "民宿專屬車位", desc: "出發，車程約 1hr 15mins。", lat: 34.8735, lng: 136.5658 },
-                { name: "Mitoka 農園", time: "10:00", tel: "0581-78-5556", mapcode: "178 304 630*81", parking: "超大露天停車場", desc: "摘葡萄 + 餵羊仔 + 嘆打卡水果芭菲。", lat: 35.5397, lng: 136.7871 },
-                { name: "長島三井Outlet", time: "14:15", tel: "0594-45-8700", mapcode: "4 191 190*33", parking: "建議泊 P2 立體停車場低層", desc: "瘋狂 Shopping，BB 喺車午睡後繼續放電。", lat: 35.0305, lng: 136.7350 },
-                { name: "木曾路太平通店", time: "18:30", tel: "052-362-2321", mapcode: "-", parking: "附設 48 個大型露天平面車位", desc: "晚餐：日式涮涮鍋和壽喜燒，建議提早預約。", lat: 35.1384, lng: 136.8643 },
-                { name: "日航尚格酒店", time: "21:00", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "宵夜後返回名古屋酒店。", lat: 35.1706, lng: 136.8920 }
+                { name: "Suzuka Inn 民宿", time: "08:45", tel: "-", mapcode: "-", addr: "三重縣鈴鹿市內民宿", lat: 34.8735, lng: 136.5658 },
+                { name: "Mitoka 農園", time: "10:00", tel: "0581-78-5556", mapcode: "178 304 630*81", addr: "岐阜県山県市小倉726-1", lat: 35.5397, lng: 136.7871 },
+                { name: "長島三井Outlet", time: "14:15", tel: "0594-45-8700", mapcode: "4 191 190*33", addr: "三重県桑名市長島町浦安368", lat: 35.0305, lng: 136.7350 },
+                { name: "木曾路太平通店", time: "18:30", tel: "052-362-2321", mapcode: "-", addr: "愛知県名古屋市中川区太平通4丁目21", lat: 35.1384, lng: 136.8643 },
+                { name: "日航尚格酒店", time: "21:00", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 }
             ],
             "Day 6": [
-                { name: "日航尚格酒店", time: "09:20", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "連人帶行李一齊走！", lat: 35.1706, lng: 136.8920 },
-                { name: "常滑 AEON", time: "10:00", tel: "0569-35-7500", mapcode: "205 383 671*88", parking: "商場免費場", desc: "超大招財貓打卡 + 藥妝最後衝刺。", lat: 34.8966, lng: 136.8288 },
-                { name: "機場 (還車)", time: "13:00", tel: "-", mapcode: "453 800 682*20", parking: "租車還車處", desc: "附近入滿油 (紅色油槍 Regular) ➔ 機場還車。", lat: 34.8583, lng: 136.8115 }
+                { name: "日航尚格酒店", time: "09:20", tel: "052-211-8050", mapcode: "4 164 125*44", addr: "愛知県名古屋市中村区名駅5丁目20-13", lat: 35.1706, lng: 136.8920 },
+                { name: "常滑 AEON", time: "10:00", tel: "0569-35-7500", mapcode: "205 383 671*88", addr: "愛知県常滑市りんくう町2丁目20-3", lat: 34.8966, lng: 136.8288 },
+                { name: "機場 (還車)", time: "13:00", tel: "-", mapcode: "453 800 682*20", addr: "愛知県常滑市セントレア1丁目1番地", lat: 34.8583, lng: 136.8115 }
             ]
         };
 
         function showDay(day) {
-            // 修正手機版地圖縮放問題
             map.invalidateSize();
-
-            // 更新按鈕樣式
             document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-' + day.replace(' ', '')).classList.add('active');
-
-            document.getElementById('panel-title').innerText = day + " 行程詳情";
+            document.getElementById('panel-title').innerText = day + " 行程";
             const details = document.getElementById('details');
-            
-            details.innerHTML = itinerary[day].map((loc, index) => {
-                let icon = index === 0 ? "🟢" : (index === itinerary[day].length - 1 ? "🔴" : "📍");
-                
-                // 【關鍵修正】採用 Google Maps 官方標準 API 網址格式
-                const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
-                const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}`;
-                const parkUrl = `https://www.google.com/maps/search/平置き駐車場/@${loc.lat},${loc.lng},15z`;
-
-                return `
+            details.innerHTML = itinerary[day].map((loc, i) => `
                 <div class="item">
-                    <b>${icon} ${loc.name} <span style="color:#888; font-size:13px; font-weight:normal;">(${loc.time})</span></b>
-                    <div class="tip">
-                        📍 Mapcode: ${loc.mapcode}<br>
-                        📞 電話: ${loc.tel}<br>
-                        🅿️ 泊車: ${loc.parking}
-                    </div>
-                    <div class="desc">${loc.desc}</div>
+                    <b>${i===0?'🟢':(i===itinerary[day].length-1?'🔴':'📍')} ${loc.name} (${loc.time})</b>
+                    <div class="tip">📍 Mapcode: ${loc.mapcode}<br>📞 Tel: ${loc.tel}<br>🗺️ 地址: ${loc.addr}</div>
                     <div class="btn-group">
-                        <a href="${streetViewUrl}" target="_blank" class="view-btn">👀 實景</a>
-                        <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航</a>
-                        <a href="${parkUrl}" target="_blank" class="park-btn">🅿️ 搜尋附近露天停車場</a>
+                        <a href="https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}" class="view-btn">👀 地圖</a>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving" class="nav-btn">🚗 導航</a>
+                        <a href="https://www.google.com/maps/search/parking+near+${loc.lat},${loc.lng}" class="park-btn">🅿️ 找停車場</a>
                     </div>
                 </div>
-            `}).join('');
-            
-            // 清除舊的大頭針和路線
-            markers.forEach(m => map.removeLayer(m));
-            markers = [];
-            if (polyline) { map.removeLayer(polyline); }
-
-            // 畫新的大頭針
-            const latlngs = [];
-            itinerary[day].forEach((loc, index) => {
-                let icon = index === 0 ? "🟢" : (index === itinerary[day].length - 1 ? "🔴" : "📍");
-                latlngs.push([loc.lat, loc.lng]);
-                
-                const popupHTML = `
-                    <b>${icon} ${loc.name}</b><br>
-                    📍 Mapcode: ${loc.mapcode}<br>
-                    📞 電話: ${loc.tel}
-                `;
-                markers.push(L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(popupHTML));
-            });
-
-            // 畫路線
-            polyline = L.polyline(latlngs, { color: '#d32f2f', weight: 4, dashArray: '8, 8' }).addTo(map);
-
-            // 自動縮放地圖至適當範圍
+            `).join('');
+            markers.forEach(m => map.removeLayer(m)); markers = [];
+            if (polyline) map.removeLayer(polyline);
+            const pts = itinerary[day].map(l => [l.lat, l.lng]);
+            itinerary[day].forEach(l => markers.push(L.marker([l.lat, l.lng]).addTo(map).bindPopup(l.name)));
+            polyline = L.polyline(pts, { color: '#d32f2f', weight: 4, dashArray: '8,8' }).addTo(map);
             map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
         }
     </script>
