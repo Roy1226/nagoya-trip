@@ -7,19 +7,34 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: sans-serif; }
-        #map { height: 40vh; width: 100%; }
-        #menu { padding: 10px; display: flex; flex-wrap: wrap; gap: 5px; background: #eee; }
-        .day-btn { padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 5px; flex: 1; text-align: center; font-size: 13px; }
-        #info-panel { height: 50vh; overflow-y: auto; padding: 15px; background: #fff; }
-        .item { padding: 15px; border-bottom: 2px solid #f0f0f0; margin-bottom: 10px; }
-        b { color: #d32f2f; font-size: 16px; }
-        .desc { font-size: 13px; color: #333; margin: 5px 0; line-height: 1.4; }
-        .tip { font-size: 12px; color: #d84315; background: #fff3e0; padding: 5px; border-radius: 4px; margin: 5px 0; }
-        .btn-group { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
-        .nav-btn { flex: 1; background-color: #4285F4; color: white; padding: 8px; text-decoration: none; border-radius: 5px; text-align: center; font-size: 13px; }
-        .view-btn { flex: 1; background-color: #34a853; color: white; padding: 8px; text-decoration: none; border-radius: 5px; text-align: center; font-size: 13px; }
-        .park-btn { flex: 100%; background-color: #ff9800; color: white; padding: 8px; text-decoration: none; border-radius: 5px; text-align: center; font-size: 13px; }
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; background-color: #f5f5f5; }
+        
+        /* 地圖區域：固定佔手機上半截 40% 高度 */
+        #map { flex: 0 0 40vh; width: 100%; z-index: 1; }
+        
+        /* 選單區域：確保橫向排版唔會走位 */
+        #menu { flex: 0 0 auto; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: #e0e0e0; z-index: 2; }
+        .day-btn { flex: 1 1 calc(33.333% - 8px); padding: 10px 0; background: #fff; border: 2px solid #ccc; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; color: #333; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .day-btn:active { background: #d32f2f; color: white; border-color: #d32f2f; }
+        
+        /* 資訊區域：佔據剩餘空間，可上下捲動 */
+        #info-panel { flex: 1 1 auto; overflow-y: auto; padding: 15px; background: #fff; }
+        .item { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        b { color: #d32f2f; font-size: 16px; display: block; margin-bottom: 5px; }
+        .desc { font-size: 14px; color: #555; margin: 8px 0; line-height: 1.5; }
+        .tip { font-size: 13px; color: #d84315; background: #fff3e0; padding: 10px; border-radius: 5px; margin: 8px 0; font-weight: 500; line-height: 1.4; border-left: 4px solid #ff9800; }
+        
+        /* 按鈕群組排版 */
+        .btn-group { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+        .nav-btn, .view-btn, .park-btn { flex: 1 1 45%; color: white; padding: 10px 0; text-decoration: none; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; }
+        .nav-btn { background-color: #4285F4; }
+        .view-btn { background-color: #34a853; }
+        .park-btn { flex: 1 1 100%; background-color: #ff9800; }
+
+        /* 修正 Leaflet 地圖彈出視窗內的文字排版 */
+        .leaflet-popup-content { font-size: 14px; line-height: 1.6; }
+        .leaflet-popup-content b { color: #d32f2f; font-size: 15px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -33,66 +48,102 @@
         <div class="day-btn" onclick="showDay('Day 6')">Day 6</div>
     </div>
     <div id="info-panel">
-        <h2 id="panel-title" style="margin-top:0;">請點選上方日期</h2>
-        <div id="details"></div>
+        <h2 id="panel-title" style="margin-top:0; font-size: 18px;">請點選上方日期按鈕</h2>
+        <div id="details">
+            <p style="color: #666; font-size: 14px;">點選上方的 Day 1 - Day 6 來載入當天的行車路線、導航資訊及泊車提示。</p>
+        </div>
     </div>
 
     <script>
         const map = L.map('map').setView([35.1676, 136.8920], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         let markers = [];
+        let polyline = null;
 
         const itinerary = {
             "Day 1": [
-                { name: "機場 (攞車)", time: "起始", tel: "-", mapcode: "453 800 682*20", parking: "租車場", desc: "攞車及準備出發。", lat: 34.8583, lng: 136.8115 },
-                { name: "山本屋本店", time: "40分", tel: "052-482-2428", mapcode: "4 163 118*66", parking: "免費位", desc: "正宗味噌烏冬。", lat: 35.1743, lng: 136.8732 },
-                { name: "日航尚格酒店", time: "15分", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店場", desc: "Nikko Style Nagoya。", lat: 35.1706, lng: 136.8920 }
+                { name: "機場 (攞車)", time: "起始", tel: "-", mapcode: "453 800 682*20", parking: "租車場", desc: "落機攞車，安頓行李 + BB 車入大背囊。", lat: 34.8583, lng: 136.8115 },
+                { name: "山本屋本店", time: "40分", tel: "052-482-2428", mapcode: "4 163 118*66", parking: "免費停車場", desc: "晚餐：正宗味噌煮烏冬。", lat: 35.1743, lng: 136.8732 },
+                { name: "日航尚格酒店", time: "15分", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "前往榮區散步打卡，返回酒店休息。", lat: 35.1706, lng: 136.8920 }
             ],
             "Day 2": [
-                { name: "日航尚格酒店", time: "起始", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店場", desc: "出發前往樂高樂園。", lat: 35.1706, lng: 136.8920 },
-                { name: "樂高樂園", time: "30分", tel: "0570-058-605", mapcode: "52 485 581*57", parking: "市營場 (限高)", desc: "親子必玩樂高園區。", lat: 35.0507, lng: 136.8436 },
-                { name: "東別院夜市", time: "25分", tel: "052-321-9201", mapcode: "4 167 496*06", parking: "投幣場", desc: "夏日限定祭典。", lat: 35.1481, lng: 136.9011 }
+                { name: "日航尚格酒店", time: "起始", tel: "052-211-8050", mapcode: "4 164 125*44", parking: "酒店停車場", desc: "準備出發，車程約25分鐘。", lat: 35.1706, lng: 136.8920 },
+                { name: "樂高樂園", time: "30分", tel: "0570-058-605", mapcode: "52 485 581*57", parking: "市營金城埠頭 (限高注意)", desc: "親子瘋狂玩樂高，下午去 SEA LIFE 涼冷氣。", lat: 35.0507, lng: 136.8436 },
+                { name: "東別院夜市", time: "25分", tel: "052-321-9201", mapcode: "4 167 496*06", parking: "附近露天 Coin Parking", desc: "8號夏日限定夜市，掃街食現場美食車。", lat: 35.1481, lng: 136.9011 }
             ],
             "Day 3": [
-                { name: "愛知牧場", time: "45分", tel: "0561-72-1300", mapcode: "100 241 180*25", parking: "大型免費場", desc: "親親小動物。", lat: 35.1458, lng: 137.0817 },
-                { name: "あつた蓬莱軒", time: "40分", tel: "052-682-5598", mapcode: "4 137 775*86", parking: "專屬停車區", desc: "鰻魚飯名店。", lat: 35.1264, lng: 136.9069 }
+                { name: "愛知牧場", time: "45分", tel: "0561-72-1300", mapcode: "100 241 180*25", parking: "內設大型免費場", desc: "免門票，親近餵羊駝/山羊 + 睇8月向日葵花海。", lat: 35.1458, lng: 137.0817 },
+                { name: "あつた蓬莱軒", time: "40分", tel: "052-682-5598", mapcode: "4 137 775*86", parking: "設專屬停車區", desc: "神宮店/本店食鰻魚飯，切勿去松坂屋店以免受限高影響。", lat: 35.1264, lng: 136.9069 }
             ],
             "Day 4": [
-                { name: "鈴鹿賽車場", time: "70分", tel: "059-378-1111", mapcode: "159 387 508*68", parking: "園區專用場", desc: "賽車主題公園。", lat: 34.8438, lng: 136.5333 },
-                { name: "鈴鹿市酒店", time: "15分", tel: "-", mapcode: "-", parking: "酒店停車場", desc: "休息充電。", lat: 34.8735, lng: 136.5658 }
+                { name: "鈴鹿賽車場", time: "70分", tel: "059-378-1111", mapcode: "159 387 508*68", parking: "園區專用場", desc: "專為幼童設嘅賽車樂園，高溫注意防曬。", lat: 34.8438, lng: 136.5333 },
+                { name: "鈴鹿市酒店", time: "15分", tel: "-", mapcode: "-", parking: "酒店專屬場", desc: "民宿休息，可考慮買一升びん燒肉或藏壽司。", lat: 34.8735, lng: 136.5658 }
             ],
             "Day 5": [
-                { name: "Mitoka 農園", time: "50分", tel: "0581-78-5556", mapcode: "178 304 630*81", parking: "免費車場", desc: "水果採摘。", lat: 35.5397, lng: 136.7871 },
-                { name: "長島三井Outlet", time: "50分", tel: "0594-45-8700", mapcode: "4 191 190*33", parking: "立體場 (限高)", desc: "購物熱點。", lat: 35.0305, lng: 136.7350 }
+                { name: "Mitoka 農園", time: "50分", tel: "0581-78-5556", mapcode: "178 304 630*81", parking: "超大露天停車場", desc: "摘葡萄 + 餵羊仔 + 嘆打卡水果芭菲。", lat: 35.5397, lng: 136.7871 },
+                { name: "長島三井Outlet", time: "50分", tel: "0594-45-8700", mapcode: "4 191 190*33", parking: "建議泊 P2 立體停車場低層", desc: "瘋狂 Shopping，消費滿 ¥3000 可免泊車費。", lat: 35.0305, lng: 136.7350 },
+                { name: "木曾路太平通店", time: "40分", tel: "052-362-2321", mapcode: "-", parking: "附設 48 個大型露天平面車位", desc: "晚餐：日式涮涮鍋和壽喜燒，建議提早由秘書預約。", lat: 35.1384, lng: 136.8643 }
             ],
             "Day 6": [
-                { name: "常滑 AEON", time: "35分", tel: "0569-35-7500", mapcode: "205 383 671*88", parking: "商場免費場", desc: "最後衝刺。", lat: 34.8966, lng: 136.8288 },
-                { name: "機場 (還車)", time: "10分", tel: "-", mapcode: "453 800 682*20", parking: "租車還車處", desc: "還車，買手信。", lat: 34.8583, lng: 136.8115 }
+                { name: "常滑 AEON", time: "35分", tel: "0569-35-7500", mapcode: "205 383 671*88", parking: "商場免費場", desc: "超大招財貓打卡 + 藥妝最後衝刺。", lat: 34.8966, lng: 136.8288 },
+                { name: "機場 (還車)", time: "10分", tel: "-", mapcode: "453 800 682*20", parking: "租車還車處", desc: "附近入滿油 (紅色油槍 Regular) ➔ 機場還車。", lat: 34.8583, lng: 136.8115 }
             ]
         };
 
         function showDay(day) {
-            document.getElementById('panel-title').innerText = day + " 詳情";
+            document.getElementById('panel-title').innerText = day + " 行程詳情";
             const details = document.getElementById('details');
-            details.innerHTML = itinerary[day].map(loc => `
+            
+            // 生成清單列表並加入 Google Maps 正式連結
+            details.innerHTML = itinerary[day].map((loc, index) => {
+                let icon = index === 0 ? "🟢" : (index === itinerary[day].length - 1 ? "🔴" : "📍");
+                
+                // Google Maps 官方深度連結
+                const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving`;
+                const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}`;
+                const parkUrl = `https://www.google.com/maps/search/平置き+駐車場/@${loc.lat},${loc.lng},16z`;
+
+                return `
                 <div class="item">
-                    <b>${loc.name}</b> <small>(⏱ ${loc.time})</small>
+                    <b>${icon} ${loc.name} <span style="color:#888; font-size:13px; font-weight:normal;">(⏱ ${loc.time})</span></b>
+                    <div class="tip">
+                        📍 Mapcode: ${loc.mapcode}<br>
+                        📞 電話: ${loc.tel}<br>
+                        🅿️ 泊車: ${loc.parking}
+                    </div>
                     <div class="desc">${loc.desc}</div>
-                    <div class="tip">📍 ${loc.mapcode} | 📞 ${loc.tel} | 🅿️ ${loc.parking}</div>
                     <div class="btn-group">
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}&travelmode=driving" target="_blank" class="nav-btn">🚗 導航</a>
-                        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${loc.lat},${loc.lng}" target="_blank" class="view-btn">👀 實景</a>
-                        <a href="https://www.google.com/maps/search/平置き駐車場+near+${loc.lat},${loc.lng}" target="_blank" class="park-btn">🅿️ 搵露天停車場</a>
+                        <a href="${streetViewUrl}" target="_blank" class="view-btn">👀 實景</a>
+                        <a href="${navUrl}" target="_blank" class="nav-btn">🚗 導航</a>
+                        <a href="${parkUrl}" target="_blank" class="park-btn">🅿️ 搜尋附近露天停車場</a>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             
+            // 清除舊的大頭針和路線
             markers.forEach(m => map.removeLayer(m));
             markers = [];
-            itinerary[day].forEach(loc => {
-                markers.push(L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(loc.name));
+            if (polyline) { map.removeLayer(polyline); }
+
+            // 畫新的大頭針 (加入電話及 Mapcode 到地圖彈出視窗！)
+            const latlngs = [];
+            itinerary[day].forEach((loc, index) => {
+                let icon = index === 0 ? "🟢" : (index === itinerary[day].length - 1 ? "🔴" : "📍");
+                latlngs.push([loc.lat, loc.lng]);
+                
+                const popupHTML = `
+                    <b>${icon} ${loc.name}</b><br>
+                    📍 Mapcode: ${loc.mapcode}<br>
+                    📞 電話: ${loc.tel}
+                `;
+                markers.push(L.marker([loc.lat, loc.lng]).addTo(map).bindPopup(popupHTML));
             });
-            map.setView([itinerary[day][0].lat, itinerary[day][0].lng], 12);
+
+            // 畫路線
+            polyline = L.polyline(latlngs, { color: '#d32f2f', weight: 4, dashArray: '8, 8' }).addTo(map);
+
+            // 自動縮放地圖去包含當日所有景點
+            map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
         }
     </script>
 </body>
